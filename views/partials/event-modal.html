@@ -1,0 +1,305 @@
+<!-- Универсальное модальное окно создания мероприятия -->
+<div id="eventModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Создание мероприятия</h2>
+            <span class="close" onclick="closeEventModal()">&times;</span>
+        </div>
+        <form id="eventForm">
+            <div class="form-group">
+                <label for="eventTitle">Название мероприятия</label>
+                <input type="text" id="eventTitle" name="title" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="eventDescription">Описание</label>
+                <textarea id="eventDescription" name="description" rows="2" required></textarea>
+            </div>
+            
+            <div class="form-row" style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="eventDate">Дата проведения</label>
+                    <input type="date" id="eventDate" name="event_date" required>
+                </div>
+                
+                <div class="form-group" style="flex: 1;">
+                    <label for="eventScale">Масштаб</label>
+                    <select id="eventScale" name="scale" required>
+                        <option value="institute">Институтское (1)</option>
+                        <option value="university">Университетское (2)</option>
+                        <option value="city">Городское (3)</option>
+                        <option value="regional">Региональное (4)</option>
+                        <option value="district">Окружное (5)</option>
+                        <option value="federal">Федеральное (6)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Поиск участников</label>
+                <div class="search-container">
+                    <div class="search-tabs">
+                        <button type="button" class="search-tab active" onclick="window.switchSearchTab('team')">Моя команда</button>
+                        <button type="button" class="search-tab" onclick="window.switchSearchTab('all')">Все участники</button>
+                    </div>
+                    
+                    <div class="search-box">
+                        <input type="text" id="userSearch" placeholder="Поиск по имени..." oninput="window.searchUsers()">
+                        <span class="stats-badge" id="searchCount">0</span>
+                    </div>
+                    
+                    <div id="usersList" class="users-list">
+                        <div style="text-align: center; padding: 15px;">Загрузка...</div>
+                    </div>
+                    
+                    <div id="pagination" class="pagination"></div>
+                </div>
+            </div>
+            
+            <div class="selected-users">
+                <h4>Выбранные участники (<span id="selectedCount">0</span>)</h4>
+                <div id="selectedUsersList"></div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="submitEventBtn">Создать мероприятие</button>
+        </form>
+    </div>
+</div>
+
+<script>
+// Универсальные функции для работы с мероприятием
+window.EventManager = {
+    selectedUsers: new Map(),
+    allUsers: [],
+    teamMembers: [],
+    currentUserId: null,
+    currentUserTeamId: null,
+    currentSearchTab: 'team',
+    currentPage: 1,
+    itemsPerPage: 15,
+    searchQuery: '',
+    userRole: '', // 'chairman' или 'specialist'
+    
+    init: function(role) {
+        this.userRole = role;
+        this.loadAllUsers();
+        if (role === 'chairman') {
+            this.loadTeamMembers();
+        }
+    },
+    
+    loadAllUsers: async function() {
+        try {
+            const url = this.userRole === 'chairman' ? '/chairman/all-users' : '/specialist/all-users';
+            const response = await fetch(url);
+            this.allUsers = await response.json();
+            this.renderUserList();
+        } catch (error) {
+            console.error('Ошибка загрузки пользователей:', error);
+        }
+    },
+    
+    loadTeamMembers: async function() {
+        try {
+            const response = await fetch('/chairman/team-members');
+            this.teamMembers = await response.json();
+        } catch (error) {
+            console.error('Ошибка загрузки участников команды:', error);
+        }
+    },
+    
+    switchSearchTab: function(tab) {
+        this.currentSearchTab = tab;
+        this.currentPage = 1;
+        document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        this.renderUserList();
+    },
+    
+    searchUsers: function() {
+        this.searchQuery = document.getElementById('userSearch').value.toLowerCase();
+        this.currentPage = 1;
+        this.renderUserList();
+    },
+    
+    getFilteredUsers: function() {
+        let users = [];
+        
+        if (this.userRole === 'chairman') {
+            users = this.currentSearchTab === 'team' ? this.teamMembers : this.allUsers;
+        } else {
+            // Для специалиста показываем всех
+            users = this.allUsers;
+        }
+        
+        // Фильтруем по поиску
+        if (this.searchQuery) {
+            users = users.filter(user => 
+                user.full_name.toLowerCase().includes(this.searchQuery)
+            );
+        }
+        
+        return users;
+    },
+    
+    renderUserList: function() {
+        const usersList = document.getElementById('usersList');
+        const filteredUsers = this.getFilteredUsers();
+        
+        document.getElementById('searchCount').textContent = filteredUsers.length;
+        
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = Math.min(startIndex + this.itemsPerPage, filteredUsers.length);
+        const pageUsers = filteredUsers.slice(startIndex, endIndex);
+        
+        usersList.innerHTML = '';
+        
+        if (pageUsers.length === 0) {
+            usersList.innerHTML = '<div style="text-align: center; padding: 15px;">Пользователи не найдены</div>';
+            return;
+        }
+        
+        pageUsers.forEach(user => {
+            const isSelected = this.selectedUsers.has(user.id);
+            const userDiv = document.createElement('div');
+            userDiv.className = `user-item ${isSelected ? 'selected' : ''}`;
+            
+            userDiv.innerHTML = `
+                <div class="user-info">
+                    <div class="user-name">${user.full_name}</div>
+                    <div class="user-meta">
+                        <span class="user-team">${user.team_name || 'Без команды'}</span>
+                        <span class="user-rating">⭐ ${user.total_rating || 0}</span>
+                    </div>
+                </div>
+                <button class="add-button" onclick="window.EventManager.addUser(${user.id}, '${user.full_name.replace(/'/g, "\\'")}')" 
+                        ${isSelected ? 'disabled' : ''}>
+                    ${isSelected ? 'Добавлен' : 'Добавить'}
+                </button>
+            `;
+            
+            usersList.appendChild(userDiv);
+        });
+        
+        this.renderPagination(filteredUsers.length);
+    },
+    
+    renderPagination: function(totalItems) {
+        const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+        const pagination = document.getElementById('pagination');
+        
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+        
+        let html = '';
+        html += `<button onclick="window.EventManager.changePage(${this.currentPage - 1})" ${this.currentPage === 1 ? 'disabled' : ''}>←</button>`;
+        
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= this.currentPage - 2 && i <= this.currentPage + 2)) {
+                html += `<button onclick="window.EventManager.changePage(${i})" class="${i === this.currentPage ? 'active' : ''}">${i}</button>`;
+            } else if (i === this.currentPage - 3 || i === this.currentPage + 3) {
+                html += `<button disabled>...</button>`;
+            }
+        }
+        
+        html += `<button onclick="window.EventManager.changePage(${this.currentPage + 1})" ${this.currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+        
+        pagination.innerHTML = html;
+    },
+    
+    changePage: function(page) {
+        this.currentPage = page;
+        this.renderUserList();
+    },
+    
+    addUser: function(userId, userName) {
+        if (this.selectedUsers.has(userId)) return;
+        
+        this.selectedUsers.set(userId, {
+            id: userId,
+            name: userName,
+            role: 'volunteer'
+        });
+        
+        this.updateSelectedUsersList();
+        this.renderUserList();
+    },
+    
+    updateUserRole: function(userId, role) {
+        if (this.selectedUsers.has(userId)) {
+            const user = this.selectedUsers.get(userId);
+            user.role = role;
+            this.selectedUsers.set(userId, user);
+            this.updateSelectedUsersList();
+        }
+    },
+    
+    removeUser: function(userId) {
+        this.selectedUsers.delete(userId);
+        this.updateSelectedUsersList();
+        this.renderUserList();
+    },
+    
+    updateSelectedUsersList: function() {
+        const container = document.getElementById('selectedUsersList');
+        const countSpan = document.getElementById('selectedCount');
+        
+        countSpan.textContent = this.selectedUsers.size;
+        
+        if (this.selectedUsers.size === 0) {
+            container.innerHTML = '<p style="color: #666; text-align: center;">Нет выбранных участников</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        this.selectedUsers.forEach((user, userId) => {
+            const div = document.createElement('div');
+            div.className = 'selected-user-item';
+            div.innerHTML = `
+                <div style="display: flex; align-items: center; flex: 1; gap: 8px;">
+                    <span style="flex: 1;">${user.name}</span>
+                    <select class="role-select" onchange="window.EventManager.updateUserRole(${userId}, this.value)">
+                        <option value="volunteer" ${user.role === 'volunteer' ? 'selected' : ''}>Волонтер (1)</option>
+                        <option value="media" ${user.role === 'media' ? 'selected' : ''}>Медиа (2)</option>
+                        <option value="organizer" ${user.role === 'organizer' ? 'selected' : ''}>Организатор (3)</option>
+                    </select>
+                </div>
+                <button type="button" class="remove-button" onclick="window.EventManager.removeUser(${userId})">✕</button>
+            `;
+            container.appendChild(div);
+        });
+    },
+    
+    reset: function() {
+        this.selectedUsers.clear();
+        this.currentSearchTab = 'team';
+        this.currentPage = 1;
+        this.searchQuery = '';
+        this.updateSelectedUsersList();
+        
+        const searchInput = document.getElementById('userSearch');
+        if (searchInput) searchInput.value = '';
+        
+        this.renderUserList();
+    },
+    
+    getParticipants: function() {
+        const participants = [];
+        this.selectedUsers.forEach((user, userId) => {
+            participants.push({
+                userId: userId,
+                role: user.role
+            });
+        });
+        return participants;
+    }
+};
+
+// Глобальные функции для вызова из HTML
+window.switchSearchTab = (tab) => EventManager.switchSearchTab(tab);
+window.searchUsers = () => EventManager.searchUsers();
+window.addUser = (id, name) => EventManager.addUser(id, name);
+</script>

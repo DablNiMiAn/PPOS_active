@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали мероприятия</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .event-detail-container {
+            max-width: 1000px;
+            margin: 20px auto;
+        }
+        
+        .event-header {
+    background: linear-gradient(135deg, #bf5254 0%, #45405f 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.profile-header {
+    background: linear-gradient(135deg, #bf5254 0%, #45405f 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+        
+        .event-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+        }
+        
+        .event-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .event-meta-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .info-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .info-section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .participants-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .participants-table th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .participants-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .participants-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .role-volunteer {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .role-media {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+        
+        .role-organizer {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn-approve {
+            background: #48bb78;
+    color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-approve:hover {
+            background: #38a169;
+        }
+        
+        .btn-reject {
+            background: #f56565;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-reject:hover {
+            background: #e53e3e;
+        }
+        
+        .btn-back {
+            background: #45405f;
+    color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-back:hover {
+            background: #2d2a40;
+        }
+        
+        .rejection-form {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .rejection-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+        
+        .rejection-form textarea:focus {
+            outline: none;
+            border-color: #f56565;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification.success {
+            background: #48bb78;
+        }
+        
+        .notification.error {
+            background: #f56565;
+        }
+        
+        .notification.info {
+            background: #4299e1;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #ecc94b;
+            color: white;
+        }
+        
+        .status-approved {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .status-rejected {
+            background: #f56565;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/dashboard" class="logo">АктивистРейтинг</a>
+            <div class="nav-links">
+                <a href="/dashboard">Главная</a>
+                <a href="#" id="logoutBtn">Выход</a>
+            </div>
+        </div>
+    </nav>
+
+    <div style="margin-bottom: 20px;">
+    <button onclick="goBack()" class="btn-back" style="background: #718096; color: white; padding: 8px 20px; border: none; border-radius: 5px; cursor: pointer;">← Вернуться</button>
+</div>
+
+    <div class="event-detail-container">
+        <div id="loading" class="loading">Загрузка данных мероприятия...</div>
+        
+        <div id="eventContent" style="display: none;">
+            <!-- Шапка мероприятия -->
+            <div class="event-header">
+                <h1 id="eventTitle"></h1>
+                <div class="event-meta">
+                    <span class="event-meta-item" id="eventStatus"></span>
+                    <span class="event-meta-item" id="eventScale"></span>
+                    <span class="event-meta-item" id="eventDate"></span>
+                    <span class="event-meta-item" id="eventCreator"></span>
+                </div>
+            </div>
+
+            <!-- Описание -->
+            <div class="info-section">
+                <h2>Описание мероприятия</h2>
+                <p id="eventDescription" style="line-height: 1.6; color: #4a5568;"></p>
+            </div>
+
+            <!-- Участники -->
+            <div class="info-section">
+                <h2>Участники мероприятия (<span id="participantsCount"></span>)</h2>
+                <table class="participants-table">
+                    <thead>
+                        <tr>
+                            <th>Участник</th>
+                            <th>Команда</th>
+                            <th>Роль</th>
+                            <th>Баллы</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participantsList"></tbody>
+                </table>
+            </div>
+
+            <!-- Информация о модерации (для отклоненных) -->
+            <div id="moderationInfo" class="info-section" style="display: none;">
+                <h2>Информация о модерации</h2>
+                <p><strong>Модератор:</strong> <span id="moderatorName"></span></p>
+                <p><strong>Дата модерации:</strong> <span id="moderationDate"></span></p>
+                <p><strong>Причина отказа:</strong> <span id="rejectionReason"></span></p>
+            </div>
+
+            <!-- Кнопки действий (только для специалиста и только для pending) -->
+            <div id="actionButtons" class="action-buttons">
+                <button class="btn-approve" onclick="approveEvent()">✓ Принять мероприятие</button>
+                <button class="btn-reject" onclick="showRejectionForm()">✗ Отклонить</button>
+                <a href="/dashboard" class="btn-back">← Назад к модерации</a>
+            </div>
+
+            <!-- Форма отказа (изначально скрыта) -->
+            <div id="rejectionForm" class="rejection-form" style="display: none;">
+                <h3 style="margin-top: 0; color: #c53030;">Укажите причину отказа</h3>
+                <textarea id="rejectionReasonInput" rows="4" placeholder="Опишите, что нужно исправить... Например: неверный масштаб, лишние участники, неправильная дата и т.д."></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-reject" onclick="rejectEvent()">Отправить причину отказа</button>
+                    <button class="btn-back" onclick="hideRejectionForm()">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Получаем ID мероприятия из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+        const userRole = urlParams.get('role');
+
+        let eventData = null;
+        let participants = [];
+        let selectedUsers = new Map();
+
+        // Загрузка данных мероприятия
+        async function loadEventDetails() {
+            try {
+                const response = await fetch(`/api/event/${eventId}`);
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки данных');
+                }
+                
+                eventData = await response.json();
+                
+                // Загрузка участников
+                const participantsResponse = await fetch(`/api/event/${eventId}/participants`);
+                participants = await participantsResponse.json();
+                
+                displayEventDetails();
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка при загрузке данных', 'error');
+            }
+        }
+
+        // Отображение данных мероприятия
+        function displayEventDetails() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('eventContent').style.display = 'block';
+
+            // Основная информация
+            document.getElementById('eventTitle').textContent = eventData.title;
+            document.getElementById('eventDescription').textContent = eventData.description || 'Нет описания';
+            
+            // Статус
+            const statusSpan = document.getElementById('eventStatus');
+            statusSpan.textContent = getStatusText(eventData.status);
+            statusSpan.className = `event-meta-item status-${eventData.status}`;
+            
+            // Масштаб
+            document.getElementById('eventScale').textContent = `Масштаб: ${getScaleName(eventData.scale)} (${eventData.scale_value} баллов)`;
+            
+            // Дата
+            document.getElementById('eventDate').textContent = `Дата: ${new Date(eventData.event_date).toLocaleDateString()}`;
+            
+            // Создатель
+            document.getElementById('eventCreator').textContent = `Создатель: ${eventData.creator_name}`;
+
+            // Участники
+            document.getElementById('participantsCount').textContent = participants.length;
+            
+            const tbody = document.getElementById('participantsList');
+            tbody.innerHTML = '';
+            
+            participants.forEach(p => {
+                const row = document.createElement('tr');
+                const roleClass = `role-badge role-${p.role}`;
+                
+                row.innerHTML = `
+                    <td>${p.full_name}</td>
+                    <td>${p.team_name || 'Без команды'}</td>
+                    <td><span class="${roleClass}">${getRoleName(p.role)}</span></td>
+                    <td>${p.points_earned} (масштаб ${eventData.scale_value} + роль ${p.role_value})</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Если мероприятие уже модерировалось
+            if (eventData.status !== 'pending') {
+    document.getElementById('moderationInfo').style.display = 'block';
+    document.getElementById('moderatorName').textContent = eventData.moderator_name || 'Неизвестно';
+    document.getElementById('moderationDate').textContent = eventData.moderated_at ? new Date(eventData.moderated_at).toLocaleString('ru-RU') : 'Неизвестно';
+    
+    // Отображаем причину отказа, если есть
+    if (eventData.rejection_reason) {
+        document.getElementById('rejectionReason').innerHTML = `
+            <div style="background: #fff0f0; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                <strong style="color: #c53030;">Причина отказа:</strong>
+                <p style="margin: 10px 0 0 0; white-space: pre-wrap;">${eventData.rejection_reason}</p>
+            </div>
+        `;
+    }
+}
+
+            // Показываем кнопки только для специалиста и только для pending мероприятий
+            if (userRole === 'specialist' && eventData.status === 'pending') {
+                document.getElementById('actionButtons').style.display = 'flex';
+            } else {
+                document.getElementById('actionButtons').style.display = 'none';
+            }
+        }
+
+        // Принять мероприятие
+        async function approveEvent() {
+    if (!confirm('Вы уверены, что хотите принять это мероприятие?')) return;
+    
+    try {
+        const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                status: 'approved',
+                reason: '' 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showNotification('Мероприятие принято! Баллы начислены участникам.', 'success');
+            
+            // Отправляем уведомления
+            await sendNotifications('approved', '');
+            
+            setTimeout(() => {
+                window.location.href = '/dashboard';  // ИСПРАВЛЕНО
+            }, 2000);
+        } else {
+            showNotification(result.error || 'Ошибка при модерации', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка соединения с сервером', 'error');
+    }
+}
+
+        // Показать форму отказа
+        function showRejectionForm() {
+            document.getElementById('rejectionForm').style.display = 'block';
+            document.getElementById('actionButtons').style.display = 'none';
+        }
+
+        // Скрыть форму отказа
+        function hideRejectionForm() {
+            document.getElementById('rejectionForm').style.display = 'none';
+            document.getElementById('actionButtons').style.display = 'flex';
+        }
+
+        // Отклонить мероприятие с причиной
+        async function rejectEvent() {
+    const reason = document.getElementById('rejectionReasonInput').value.trim();
+    
+    if (!reason) {
+        alert('Укажите причину отказа');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                status: 'rejected',
+                reason: reason 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showNotification('Мероприятие отклонено. Уведомления отправлены.', 'success');
+            
+            // Отправляем уведомления с причиной
+            await sendNotifications('rejected', reason);
+            
+            // Перенаправляем на дашборд (не на /specialist!)
+            setTimeout(() => {
+                window.location.href = '/dashboard';  // ИСПРАВЛЕНО
+            }, 2000);
+        } else {
+            showNotification(result.error || 'Ошибка при модерации', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка соединения с сервером', 'error');
+    }
+}
+
+        // Отправка уведомлений
+        async function sendNotifications(status, reason) {
+            try {
+                await fetch('/api/send-notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        eventId: eventId,
+                        status: status,
+                        reason: reason,
+                        participants: participants.map(p => p.user_id),
+                        creatorId: eventData.created_by
+                    })
+                });
+            } catch (error) {
+                console.error('Ошибка при отправке уведомлений:', error);
+            }
+        }
+
+        // Показать уведомление
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Вспомогательные функции
+        function getStatusText(status) {
+            const statuses = {
+                'pending': 'На модерации',
+                'approved': 'Принято',
+                'rejected': 'Отклонено'
+            };
+            return statuses[status] || status;
+        }
+
+        function goBack() {
+    window.history.back();
+}
+        
+        function getScaleName(scale) {
+            const scales = {
+                'institute': 'Институтское',
+                'university': 'Университетское',
+                'city': 'Городское',
+                'regional': 'Региональное',
+                'district': 'Окружное',
+                'federal': 'Федеральное'
+            };
+            return scales[scale] || scale;
+        }
+
+        function getRoleName(role) {
+            const roles = {
+                'volunteer': 'Волонтер',
+                'media': 'Медиа',
+                'organizer': 'Организатор'
+            };
+            return roles[role] || role;
+        }
+
+        // Выход
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('/auth/logout', { method: 'POST' });
+            window.location.href = '/login';
+        });
+
+        // Загрузка данных при старте
+        if (eventId) {
+            loadEventDetails();
+        } else {
+            window.location.href = '/dashboard';
+        }
+    </script>
+</body>
+</html>

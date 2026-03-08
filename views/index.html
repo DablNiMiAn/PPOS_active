@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рейтинг активистов - Главная</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">АктивистРейтинг</a>
+            <div class="nav-links">
+                <a href="/" class="active">Главная</a>
+                <a href="/login">Вход</a>
+                <a href="/register">Регистрация</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Герой секция -->
+        <div class="card" style="text-align: center; padding: 60px 20px;">
+            <h1 style="font-size: 3rem; margin-bottom: 20px; color: #667eea;">
+                Система рейтинга активистов
+            </h1>
+            <p style="font-size: 1.2rem; color: #666; margin-bottom: 30px;">
+                Отслеживайте активность участников, управляйте мероприятиями и поощряйте самых активных
+            </p>
+            <div>
+                <a href="/register" class="btn btn-primary" style="margin-right: 10px;">Присоединиться</a>
+                <a href="/login" class="btn" style="background: #f0f0f0;">Войти</a>
+            </div>
+        </div>
+
+        <!-- Топ рейтинга -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Топ-10 активистов</h2>
+            </div>
+            <div id="topRating" class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Место</th>
+                            <th>Имя</th>
+                            <th>Команда</th>
+                            <th>Рейтинг</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topRatingBody">
+                        <!-- Данные загружаются через JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Информация о системе -->
+        <div class="grid">
+            <div class="card">
+                <h3 style="margin-bottom: 15px; color: #667eea;">Для активистов</h3>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 10px;">✓ Личный рейтинг</li>
+                    <li style="margin-bottom: 10px;">✓ История мероприятий</li>
+                    <li style="margin-bottom: 10px;">✓ Сравнение с командой</li>
+                    <li style="margin-bottom: 10px;">✓ Общий рейтинг</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h3 style="margin-bottom: 15px; color: #667eea;">Для председателей</h3>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 10px;">✓ Создание мероприятий</li>
+                    <li style="margin-bottom: 10px;">✓ Добавление достижений</li>
+                    <li style="margin-bottom: 10px;">✓ Управление командой</li>
+                    <li style="margin-bottom: 10px;">✓ Участие в рейтинге</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h3 style="margin-bottom: 15px; color: #667eea;">Для специалистов</h3>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 10px;">✓ Модерация</li>
+                    <li style="margin-bottom: 10px;">✓ Назначение ролей</li>
+                    <li style="margin-bottom: 10px;">✓ Штрафы и поощрения</li>
+                    <li style="margin-bottom: 10px;">✓ Полный контроль</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script>
+        // Загрузка топа рейтинга
+        fetch('/api/top-rating')
+            .then(response => response.json())
+            .then(users => {
+                const tbody = document.getElementById('topRatingBody');
+                tbody.innerHTML = '';
+                
+                users.forEach((user, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${user.full_name}</td>
+                        <td>${user.team_name || 'Без команды'}</td>
+                        <td><span class="rating-badge">${user.total_rating}</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Ошибка загрузки рейтинга:', error));
+    </script>
+</body>
+</html>

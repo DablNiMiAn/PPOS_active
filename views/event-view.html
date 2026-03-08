@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр мероприятия</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .view-container {
+            max-width: 1000px;
+            margin: 20px auto;
+        }
+        
+        .event-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .event-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+        }
+        
+        .event-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .event-meta-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .info-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .info-section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .participants-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .participants-table th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .participants-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .participants-table tr:hover {
+            background: #f7fafc;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .role-volunteer {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .role-media {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+        
+        .role-organizer {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #ecc94b;
+            color: white;
+        }
+        
+        .status-approved {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .status-rejected {
+            background: #f56565;
+            color: white;
+        }
+        
+        .my-role {
+            background: #ebf8ff;
+            border: 2px solid #4299e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .my-role-icon {
+            width: 50px;
+            height: 50px;
+            background: #4299e1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .my-role-info h3 {
+            margin: 0 0 5px 0;
+            color: #2c5282;
+        }
+        
+        .my-role-info p {
+            margin: 0;
+            color: #4a5568;
+        }
+        
+        .rejection-info {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .rejection-info h3 {
+            color: #c53030;
+            margin-top: 0;
+        }
+        
+        .rejection-reason {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f56565;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        
+        .btn-back {
+            background: #718096;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-back:hover {
+            background: #4a5568;
+        }
+        
+        .btn-edit {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        .btn-edit:hover {
+            background: #5a67d8;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .participants-count {
+            display: inline-block;
+            background: #bf5254;
+    color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-left: 15px;
+        }
+        
+        .hidden-participants {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .points-calculation {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .points-calculation h4 {
+            margin: 0 0 10px 0;
+            color: #2c5282;
+        }
+        
+        .points-formula {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .points-item {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .points-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #48bb78;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/dashboard" class="logo">АктивистРейтинг</a>
+            <div class="nav-links">
+                <a href="/dashboard">Главная</a>
+                <a href="#" id="logoutBtn">Выход</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="view-container">
+        <div id="loading" class="loading">Загрузка данных мероприятия...</div>
+        
+        <div id="eventContent" style="display: none;">
+            <!-- Шапка мероприятия -->
+            <div class="event-header">
+                <h1 id="eventTitle"></h1>
+                <div class="event-meta">
+                    <span class="event-meta-item" id="eventStatus"></span>
+                    <span class="event-meta-item" id="eventScale"></span>
+                    <span class="event-meta-item" id="eventDate"></span>
+                    <span class="event-meta-item" id="eventCreator"></span>
+                    <span class="event-meta-item" id="eventModerator"></span>
+                </div>
+            </div>
+
+            <!-- Информация об отклонении (для всех) -->
+            <div id="rejectionInfo" class="rejection-info" style="display: none;">
+                <h3>⚠️ Мероприятие было отклонено</h3>
+                <div id="rejectionReason" class="rejection-reason"></div>
+                <p><strong>Модератор:</strong> <span id="rejectionModerator"></span></p>
+                <p><strong>Дата:</strong> <span id="rejectionDate"></span></p>
+            </div>
+
+            <!-- Моя роль (для активиста и председателя) -->
+            <div id="myRoleSection" class="my-role" style="display: none;">
+                <div class="my-role-icon">👤</div>
+                <div class="my-role-info">
+                    <h3>Моя роль в мероприятии</h3>
+                    <p id="myRoleText"></p>
+                    <p id="myPointsText" style="font-weight: bold; color: #48bb78;"></p>
+                </div>
+            </div>
+
+            <!-- Описание -->
+            <div class="info-section">
+                <h2>Описание мероприятия</h2>
+                <p id="eventDescription" style="line-height: 1.6; color: #4a5568;"></p>
+            </div>
+
+            <!-- Расчет баллов (для всех) -->
+            <div class="info-section">
+                <h2>Расчет баллов</h2>
+                <div class="points-calculation">
+                    <h4>Формула: Масштаб + Роль</h4>
+                    <div class="points-formula">
+                        <div class="points-item">
+                            <div>Масштаб мероприятия</div>
+                            <div class="points-value" id="scalePoints"></div>
+                            <div id="scaleName"></div>
+                        </div>
+                        <div class="points-item">
+                            <div>Моя роль</div>
+                            <div class="points-value" id="rolePoints"></div>
+                            <div id="roleName"></div>
+                        </div>
+                        <div class="points-item">
+                            <div>Всего баллов</div>
+                            <div class="points-value" id="totalPoints"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Участники (разный уровень доступа) -->
+            <div class="info-section">
+                <h2>
+                    Участники мероприятия 
+                    <span id="participantsCount" class="participants-count">0</span>
+                </h2>
+                
+                <!-- Для активиста - скрытый список -->
+                <div id="activistView" style="display: none;">
+                    <div class="hidden-participants">
+                        👥 Список участников доступен только председателям и специалистам
+                    </div>
+                </div>
+                
+                <!-- Для председателя и специалиста - полный список -->
+                <div id="fullView">
+                    <table class="participants-table">
+                        <thead>
+                            <tr>
+                                <th>Участник</th>
+                                <th>Команда</th>
+                                <th>Роль</th>
+                                <th>Баллы</th>
+                            </tr>
+                        </thead>
+                        <tbody id="participantsList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <a href="/dashboard" class="btn-back">← Назад</a>
+                <a id="editButton" href="#" class="btn-edit" style="display: none;">✏️ Редактировать</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Получаем ID мероприятия и роль из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+        const userRole = urlParams.get('role');
+
+        let eventData = null;
+        let participants = [];
+        let myParticipation = null;
+
+        // Загрузка данных мероприятия
+        async function loadEventData() {
+            try {
+                console.log('Загрузка мероприятия ID:', eventId);
+                console.log('Роль пользователя:', userRole);
+                
+                // Загружаем информацию о мероприятии
+                const eventResponse = await fetch(`/api/event/${eventId}`);
+                if (!eventResponse.ok) {
+                    throw new Error('Ошибка загрузки мероприятия');
+                }
+                eventData = await eventResponse.json();
+                console.log('Данные мероприятия:', eventData);
+                
+                // Загружаем участников
+                const participantsResponse = await fetch(`/api/event/${eventId}/participants`);
+                participants = await participantsResponse.json();
+                console.log('Участники:', participants);
+                
+                // Для активиста - ищем свою роль
+                if (userRole === 'activist') {
+                    const userResponse = await fetch('/api/user');
+                    const currentUser = await userResponse.json();
+                    myParticipation = participants.find(p => p.user_id === currentUser.id);
+                    console.log('Моя роль:', myParticipation);
+                }
+                
+                // Для председателя - ищем его роль (он может быть участником)
+                if (userRole === 'chairman') {
+                    const userResponse = await fetch('/api/user');
+                    const currentUser = await userResponse.json();
+                    myParticipation = participants.find(p => p.user_id === currentUser.id);
+                }
+                
+                displayEventData();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                document.getElementById('loading').innerHTML = '❌ Ошибка загрузки данных';
+            }
+        }
+
+        // Отображение данных
+        function displayEventData() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('eventContent').style.display = 'block';
+
+            // Основная информация
+            document.getElementById('eventTitle').textContent = eventData.title;
+            document.getElementById('eventDescription').textContent = eventData.description || 'Нет описания';
+            
+            // Статус
+            const statusSpan = document.getElementById('eventStatus');
+            statusSpan.textContent = getStatusText(eventData.status);
+            statusSpan.className = `event-meta-item status-${eventData.status}`;
+            
+            // Масштаб
+            document.getElementById('eventScale').textContent = `Масштаб: ${getScaleName(eventData.scale)} (${eventData.scale_value} баллов)`;
+            
+            // Дата
+            document.getElementById('eventDate').textContent = `Дата: ${new Date(eventData.event_date).toLocaleDateString('ru-RU')}`;
+            
+            // Создатель
+            document.getElementById('eventCreator').textContent = `Создатель: ${eventData.creator_name}`;
+            
+            // Модератор
+            if (eventData.moderator_name) {
+                document.getElementById('eventModerator').textContent = `Модератор: ${eventData.moderator_name}`;
+            } else {
+                document.getElementById('eventModerator').style.display = 'none';
+            }
+
+            // Информация об отклонении
+            if (eventData.status === 'rejected' && eventData.rejection_reason) {
+                document.getElementById('rejectionInfo').style.display = 'block';
+                document.getElementById('rejectionReason').innerHTML = `<strong>Причина:</strong> ${eventData.rejection_reason}`;
+                document.getElementById('rejectionModerator').textContent = eventData.moderator_name || 'Неизвестно';
+                document.getElementById('rejectionDate').textContent = eventData.moderated_at ? new Date(eventData.moderated_at).toLocaleString('ru-RU') : 'Неизвестно';
+            }
+
+            // Моя роль
+            if (myParticipation) {
+                document.getElementById('myRoleSection').style.display = 'flex';
+                
+                const roleText = getRoleName(myParticipation.role);
+                const scalePoints = eventData.scale_value;
+                const rolePoints = myParticipation.role_value;
+                const totalPoints = scalePoints + rolePoints;
+                
+                document.getElementById('myRoleText').innerHTML = `
+                    <strong>Роль:</strong> ${roleText}<br>
+                    <strong>Участие:</strong> ${new Date(eventData.event_date).toLocaleDateString('ru-RU')}
+                `;
+                
+                document.getElementById('myPointsText').textContent = `Заработано баллов: ${totalPoints}`;
+                
+                // Расчет баллов
+                document.getElementById('scalePoints').textContent = scalePoints;
+                document.getElementById('scaleName').textContent = getScaleName(eventData.scale);
+                document.getElementById('rolePoints').textContent = rolePoints;
+                document.getElementById('roleName').textContent = roleText;
+                document.getElementById('totalPoints').textContent = totalPoints;
+            } else {
+                document.getElementById('myRoleSection').style.display = 'none';
+            }
+
+            // Участники - разный уровень доступа
+            document.getElementById('participantsCount').textContent = participants.length;
+            
+            if (userRole === 'activist') {
+                // Активист видит только свою роль
+                document.getElementById('activistView').style.display = 'block';
+                document.getElementById('fullView').style.display = 'none';
+            } else {
+                // Председатель и специалист видят всех
+                document.getElementById('activistView').style.display = 'none';
+                document.getElementById('fullView').style.display = 'block';
+                
+                const tbody = document.getElementById('participantsList');
+                tbody.innerHTML = '';
+                
+                participants.forEach(p => {
+                    const row = document.createElement('tr');
+                    const roleClass = `role-badge role-${p.role}`;
+                    const totalPoints = eventData.scale_value + p.role_value;
+                    
+                    row.innerHTML = `
+                        <td>${p.full_name}</td>
+                        <td>${p.team_name || 'Без команды'}</td>
+                        <td><span class="${roleClass}">${getRoleName(p.role)}</span></td>
+                        <td>${totalPoints} (масштаб ${eventData.scale_value} + роль ${p.role_value})</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            // Кнопка редактирования (только для председателя, если он создатель)
+            const editButton = document.getElementById('editButton');
+            if (userRole === 'chairman' && eventData.created_by === currentUserId) {
+                editButton.style.display = 'inline-block';
+                editButton.href = `/chairman-event-edit.html?id=${eventId}`;
+            } else {
+                editButton.style.display = 'none';
+            }
+        }
+
+        // Вспомогательные функции
+        function getStatusText(status) {
+            const statuses = {
+                'pending': 'На модерации',
+                'approved': 'Принято',
+                'rejected': 'Отклонено'
+            };
+            return statuses[status] || status;
+        }
+
+        function getScaleName(scale) {
+            const scales = {
+                'institute': 'Институтское',
+                'university': 'Университетское',
+                'city': 'Городское',
+                'regional': 'Региональное',
+                'district': 'Окружное',
+                'federal': 'Федеральное'
+            };
+            return scales[scale] || scale;
+        }
+
+        function getRoleName(role) {
+            const roles = {
+                'volunteer': 'Волонтер',
+                'media': 'Медиа',
+                'organizer': 'Организатор'
+            };
+            return roles[role] || role;
+        }
+
+        // Выход
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('/auth/logout', { method: 'POST' });
+            window.location.href = '/login';
+        });
+
+        // Загрузка данных
+        let currentUserId = null;
+        
+        async function init() {
+            // Получаем текущего пользователя
+            const userResponse = await fetch('/api/user');
+            const user = await userResponse.json();
+            currentUserId = user.id;
+            
+            if (eventId) {
+                loadEventData();
+            } else {
+                window.location.href = '/dashboard';
+            }
+        }
+        
+        init();
+    </script>
+</body>
+</html>

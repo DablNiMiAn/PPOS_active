@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Председатель - Панель управления</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/modal.css">
+    <style>
+        /* Дополнительные стили для поиска */
+        .search-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .search-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .search-tab {
+            padding: 8px 16px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .search-tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .users-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .user-item:hover {
+            background: #f0f0f0;
+        }
+        
+        .user-item.selected {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        
+        .user-meta {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .user-team {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .user-rating {
+            font-weight: bold;
+            color: #48bb78;
+            margin-left: 10px;
+        }
+        
+        .add-button {
+            padding: 5px 15px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .add-button:hover {
+            background: #38a169;
+        }
+        
+        .add-button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+        
+        .selected-users {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .selected-user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+        
+        .remove-button {
+            padding: 3px 10px;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .remove-button:hover {
+            background: #e53e3e;
+        }
+        
+        .role-select {
+            margin-left: 10px;
+            padding: 3px;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 15px;
+        }
+        
+        .pagination button {
+            padding: 5px 10px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .pagination button:disabled {
+            background: #f0f0f0;
+            cursor: not-allowed;
+        }
+        
+        .stats-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/dashboard" class="logo">АктивистРейтинг</a>
+            <div class="nav-links">
+                <a href="/dashboard" class="active">Главная</a>
+                <a href="#" onclick="showCreateEventModal(); return false;">Создать мероприятие</a>
+                <a href="#" onclick="showCreateAchievementModal(); return false;">Добавить достижение</a>
+                <a href="#" id="logoutBtn">Выход</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Профиль и статистика -->
+        <div class="grid">
+            <div class="card">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="userInitials"></div>
+                    <div class="profile-info">
+                        <h1 id="userName"></h1>
+                        <p id="userTeam"></p>
+                        <p>Мой рейтинг: <span class="rating-badge" id="userRating">0</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Статистика команды</h2>
+                </div>
+                <div id="teamStats">
+                    <p>Участников: <span id="totalMembers">0</span></p>
+                    <p>Общий рейтинг: <span id="totalRating">0</span></p>
+                    <p>Средний рейтинг: <span id="avgRating">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Мои мероприятия -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Мои мероприятия</h2>
+                <button class="btn btn-primary" onclick="showCreateEventModal()">+ Создать</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Дата</th>
+                            <th>Масштаб</th>
+                            <th>Участников</th>
+                            <th>Статус</th>
+                            <th>Модератор</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myEventsBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Загрузка...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Участники команды -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Участники команды</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Имя</th>
+                            <th>Рейтинг</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teamMembersBody">
+                        <tr>
+                            <td colspan="3" style="text-align: center;">Загрузка...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания мероприятия -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Создание мероприятия</h2>
+                <span class="close" onclick="closeEventModal()">&times;</span>
+            </div>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label for="eventTitle">Название мероприятия</label>
+                    <input type="text" id="eventTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventDescription">Описание</label>
+                    <textarea id="eventDescription" name="description" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventDate">Дата проведения</label>
+                    <input type="date" id="eventDate" name="event_date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventScale">Масштаб</label>
+                    <select id="eventScale" name="scale" required>
+                        <option value="institute">Институтское (1 балл)</option>
+                        <option value="university">Университетское (2 балла)</option>
+                        <option value="city">Городское (3 балла)</option>
+                        <option value="regional">Региональное (4 балла)</option>
+                        <option value="district">Окружное (5 баллов)</option>
+                        <option value="federal">Федеральное (6 баллов)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Поиск участников</label>
+                    <div class="search-container">
+                        <div class="search-tabs">
+                            <button type="button" class="search-tab active" onclick="switchSearchTab('team')">Моя команда</button>
+                            <button type="button" class="search-tab" onclick="switchSearchTab('all')">Все участники</button>
+                        </div>
+                        
+                        <div class="search-box">
+                            <input type="text" id="userSearch" placeholder="Поиск по имени или email..." oninput="searchUsers()">
+                            <span class="stats-badge" id="searchCount">0</span>
+                        </div>
+                        
+                        <div id="usersList" class="users-list">
+                            <!-- Список пользователей будет загружен здесь -->
+                            <div style="text-align: center; padding: 20px;">Загрузка пользователей...</div>
+                        </div>
+                        
+                        <div id="pagination" class="pagination">
+                            <!-- Пагинация будет здесь -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="selected-users">
+                    <h4>Выбранные участники (<span id="selectedCount">0</span>)</h4>
+                    <div id="selectedUsersList"></div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="submitEventBtn">Создать мероприятие</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания достижения -->
+    <div id="achievementModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Добавление достижения</h2>
+                <span class="close" onclick="closeAchievementModal()">&times;</span>
+            </div>
+            <form id="achievementForm">
+                <div class="form-group">
+                    <label for="achievementUser">Активист</label>
+                    <select id="achievementUser" name="user_id" required></select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="achievementTitle">Название достижения</label>
+                    <input type="text" id="achievementTitle" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="achievementDescription">Описание</label>
+                    <textarea id="achievementDescription" name="description" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="achievementPoints">Баллы</label>
+                    <input type="number" id="achievementPoints" name="points" min="1" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Добавить достижение</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+        let teamMembers = [];
+        let allUsers = [];
+        let currentUserId = null;
+        let currentUserTeamId = null;
+        let selectedUsers = new Map(); // Map для хранения выбранных участников с их ролями
+        let currentSearchTab = 'team';
+        let currentPage = 1;
+        const itemsPerPage = 20;
+        let searchQuery = '';
+
+        // ==================== ЗАГРУЗКА ДАННЫХ ====================
+        async function loadChairmanData() {
+            try {
+                const userResponse = await fetch('/api/user');
+                if (!userResponse.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const user = await userResponse.json();
+                currentUserId = user.id;
+                currentUserTeamId = user.team_id;
+                
+                // Заполнение профиля
+                document.getElementById('userName').textContent = user.full_name;
+                document.getElementById('userTeam').textContent = user.team_name || 'Без команды';
+                document.getElementById('userRating').textContent = user.total_rating;
+                
+                const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('userInitials').textContent = initials;
+                
+                // Загрузка данных
+                await loadTeamMembers();
+                await loadMyEvents();
+                await loadTeamStats();
+                await loadAllUsers(); // Загружаем всех пользователей для поиска
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        async function loadTeamMembers() {
+            try {
+                const response = await fetch('/chairman/team-members');
+                const members = await response.json();
+                
+                // Добавляем текущего пользователя (председателя) в список, если его там нет
+                const chairmanInList = members.some(m => m.id === currentUserId);
+                
+                if (!chairmanInList && currentUserId) {
+                    const userResponse = await fetch('/api/user');
+                    const currentUser = await userResponse.json();
+                    
+                    members.unshift({
+                        id: currentUser.id,
+                        full_name: currentUser.full_name + ' (я)',
+                        total_rating: currentUser.total_rating
+                    });
+                }
+                
+                teamMembers = members;
+                
+                const tbody = document.getElementById('teamMembersBody');
+                tbody.innerHTML = '';
+                
+                members.forEach(member => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><a href="/profile.html?id=${member.id}&role=chairman" style="color: #667eea; text-decoration: none;">${member.full_name}</a></td>
+        <td><span class="rating-badge">${member.total_rating}</span></td>
+        <td>
+            <button class="btn btn-primary btn-small" onclick="quickAddParticipant(${member.id}, '${member.full_name.replace(/'/g, "\\'")}')">+ Добавить</button>
+        </td>
+    `;
+    tbody.appendChild(row);
+});
+                
+                // Заполняем селект для достижений
+                const select = document.getElementById('achievementUser');
+                if (select) {
+                    select.innerHTML = '<option value="">Выберите активиста</option>';
+                    members.forEach(member => {
+                        if (!member.full_name.includes('(я)')) {
+                            const option = document.createElement('option');
+                            option.value = member.id;
+                            option.textContent = member.full_name;
+                            select.appendChild(option);
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Ошибка загрузки участников:', error);
+            }
+        }
+
+        async function loadAllUsers() {
+            try {
+                const response = await fetch('/chairman/all-users');
+                allUsers = await response.json();
+                console.log(`✅ Загружено ${allUsers.length} пользователей`);
+                renderUserList();
+            } catch (error) {
+                console.error('Ошибка загрузки всех пользователей:', error);
+            }
+        }
+
+        // ==================== ПОИСК И ФИЛЬТРАЦИЯ ====================
+        function switchSearchTab(tab) {
+            currentSearchTab = tab;
+            currentPage = 1;
+            
+            // Обновляем активный таб
+            document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            renderUserList();
+        }
+
+        function searchUsers() {
+            searchQuery = document.getElementById('userSearch').value.toLowerCase();
+            currentPage = 1;
+            renderUserList();
+        }
+
+        function getFilteredUsers() {
+            let users = currentSearchTab === 'team' 
+                ? teamMembers.filter(u => !u.full_name.includes('(я)'))
+                : allUsers;
+            
+            // Фильтруем по поисковому запросу
+            if (searchQuery) {
+                users = users.filter(user => 
+                    user.full_name.toLowerCase().includes(searchQuery) ||
+                    (user.email && user.email.toLowerCase().includes(searchQuery)) ||
+                    (user.username && user.username.toLowerCase().includes(searchQuery))
+                );
+            }
+            
+            return users;
+        }
+
+        function renderUserList() {
+            const usersList = document.getElementById('usersList');
+            const filteredUsers = getFilteredUsers();
+            const totalUsers = filteredUsers.length;
+            
+            document.getElementById('searchCount').textContent = totalUsers;
+            
+            // Пагинация
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalUsers);
+            const pageUsers = filteredUsers.slice(startIndex, endIndex);
+            
+            // Рендерим список
+            usersList.innerHTML = '';
+            
+            if (pageUsers.length === 0) {
+                usersList.innerHTML = '<div style="text-align: center; padding: 20px;">Пользователи не найдены</div>';
+                return;
+            }
+            
+            pageUsers.forEach(user => {
+                const isSelected = selectedUsers.has(user.id);
+                const userDiv = document.createElement('div');
+                userDiv.className = `user-item ${isSelected ? 'selected' : ''}`;
+                
+                // Находим команду пользователя
+                const userTeam = allUsers.find(u => u.id === user.id)?.team_name || teamMembers.find(u => u.id === user.id)?.team_name || 'Без команды';
+                
+                userDiv.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-name">${user.full_name}</div>
+                        <div class="user-meta">
+                            <span class="user-team">${userTeam}</span>
+                            <span class="user-rating">⭐ ${user.total_rating || 0}</span>
+                        </div>
+                    </div>
+                    <button class="add-button" onclick="addUserToSelection(${user.id}, '${user.full_name.replace(/'/g, "\\'")}')" 
+                            ${isSelected ? 'disabled' : ''}>
+                        ${isSelected ? 'Добавлен' : 'Добавить'}
+                    </button>
+                `;
+                
+                usersList.appendChild(userDiv);
+            });
+            
+            renderPagination(totalUsers);
+        }
+
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            // Кнопка "Предыдущая"
+            html += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
+            
+            // Номера страниц
+            for (let i = 1; i <= totalPages; i++) {
+                if (
+                    i === 1 || 
+                    i === totalPages || 
+                    (i >= currentPage - 2 && i <= currentPage + 2)
+                ) {
+                    html += `<button onclick="changePage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += `<button disabled>...</button>`;
+                }
+            }
+            
+            // Кнопка "Следующая"
+            html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+            
+            pagination.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderUserList();
+        }
+
+        // ==================== УПРАВЛЕНИЕ ВЫБРАННЫМИ УЧАСТНИКАМИ ====================
+        function addUserToSelection(userId, userName) {
+            if (selectedUsers.has(userId)) return;
+            
+            // Проверяем, не добавлен ли уже пользователь
+            if ([...selectedUsers.values()].some(u => u.id === userId)) return;
+            
+            selectedUsers.set(userId, {
+                id: userId,
+                name: userName,
+                role: 'volunteer' // роль по умолчанию
+            });
+            
+            updateSelectedUsersList();
+            renderUserList(); // Обновляем список, чтобы кнопки изменились
+        }
+
+        function quickAddParticipant(userId, userName) {
+            addUserToSelection(userId, userName);
+            showCreateEventModal();
+        }
+
+        function updateUserRole(userId, role) {
+            if (selectedUsers.has(userId)) {
+                const user = selectedUsers.get(userId);
+                user.role = role;
+                selectedUsers.set(userId, user);
+                updateSelectedUsersList();
+            }
+        }
+
+        function removeUserFromSelection(userId) {
+            selectedUsers.delete(userId);
+            updateSelectedUsersList();
+            renderUserList(); // Обновляем список, чтобы кнопки изменились
+        }
+
+        function updateSelectedUsersList() {
+            const container = document.getElementById('selectedUsersList');
+            const countSpan = document.getElementById('selectedCount');
+            
+            countSpan.textContent = selectedUsers.size;
+            
+            if (selectedUsers.size === 0) {
+                container.innerHTML = '<p style="color: #666;">Нет выбранных участников</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            selectedUsers.forEach((user, userId) => {
+                const div = document.createElement('div');
+                div.className = 'selected-user-item';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; flex: 1;">
+                        <span style="flex: 1;">${user.name}</span>
+                        <select class="role-select" onchange="updateUserRole(${userId}, this.value)">
+                            <option value="volunteer" ${user.role === 'volunteer' ? 'selected' : ''}>Волонтер (1 балл)</option>
+                            <option value="media" ${user.role === 'media' ? 'selected' : ''}>Медиа (2 балла)</option>
+                            <option value="organizer" ${user.role === 'organizer' ? 'selected' : ''}>Организатор (3 балла)</option>
+                        </select>
+                    </div>
+                    <button type="button" class="remove-button" onclick="removeUserFromSelection(${userId})">✕</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ==================== МОДАЛЬНЫЕ ОКНА ====================
+        function showCreateEventModal() {
+            document.getElementById('eventModal').style.display = 'block';
+            document.getElementById('eventForm').reset();
+            selectedUsers.clear();
+            updateSelectedUsersList();
+            currentPage = 1;
+            searchQuery = '';
+            document.getElementById('userSearch').value = '';
+            renderUserList();
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventModal').style.display = 'none';
+            selectedUsers.clear();
+        }
+
+        function showCreateAchievementModal() {
+            document.getElementById('achievementModal').style.display = 'block';
+        }
+
+        function closeAchievementModal() {
+            document.getElementById('achievementModal').style.display = 'none';
+        }
+
+        // ==================== ОТПРАВКА ФОРМ ====================
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (selectedUsers.size === 0) {
+                alert('Добавьте хотя бы одного участника');
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            
+            // Преобразуем выбранных участников в нужный формат
+            const participants = [];
+            selectedUsers.forEach((user, userId) => {
+                participants.push({
+                    userId: userId,
+                    role: user.role
+                });
+            });
+            
+            const data = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                event_date: formData.get('event_date'),
+                scale: formData.get('scale'),
+                participants: participants
+            };
+            
+            console.log('📝 Отправка данных:', data);
+            
+            try {
+                const response = await fetch('/chairman/event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('📥 Ответ сервера:', result);
+                
+                if (response.ok) {
+                    alert('Мероприятие успешно создано и отправлено на модерацию');
+                    closeEventModal();
+                    loadMyEvents();
+                } else {
+                    alert(result.error || 'Ошибка при создании мероприятия');
+                }
+                
+            } catch (error) {
+                console.error('❌ Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        });
+
+        document.getElementById('achievementForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/chairman/achievement', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Достижение успешно создано и отправлено на модерацию');
+                    closeAchievementModal();
+                    e.target.reset();
+                } else {
+                    alert(result.error || 'Ошибка при создании достижения');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        });
+
+        // ==================== ОСТАЛЬНЫЕ ФУНКЦИИ ====================
+        async function loadMyEvents() {
+            try {
+                const response = await fetch('/chairman/my-events');
+                const events = await response.json();
+                
+                const tbody = document.getElementById('myEventsBody');
+                tbody.innerHTML = '';
+                
+                if (events.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Нет мероприятий</td></tr>';
+                    return;
+                }
+                
+                events.forEach(event => {
+    const row = document.createElement('tr');
+    const statusClass = event.status === 'approved' ? 'status-approved' : 
+                      event.status === 'rejected' ? 'status-rejected' : 'status-pending';
+    
+    let actions = '';
+    if (event.status === 'rejected') {
+        actions = `<a href="/chairman-event-edit.html?id=${event.id}" class="btn btn-warning btn-small">✏️ Исправить</a>`;
+    }
+    
+    row.innerHTML = `
+        <td><a href="/event-view.html?id=${event.id}&role=chairman" style="color: #667eea; text-decoration: none;">${event.title}</a></td>
+        <td>${new Date(event.event_date).toLocaleDateString()}</td>
+        <td>${getScaleName(event.scale)}</td>
+        <td>${event.participants_count || 0}</td>
+        <td><span class="status-badge ${statusClass}">${getStatusName(event.status)}</span></td>
+        <td>${event.moderator_name || '—'}</td>
+        <td>${actions}</td>
+    `;
+    tbody.appendChild(row);
+});
+                
+            } catch (error) {
+                console.error('Ошибка загрузки мероприятий:', error);
+            }
+        }
+
+        async function loadTeamStats() {
+            try {
+                const response = await fetch('/chairman/team-stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalMembers').textContent = stats.total_members || 0;
+                document.getElementById('totalRating').textContent = stats.total_rating || 0;
+                document.getElementById('avgRating').textContent = Math.round(stats.average_rating || 0);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+        function getScaleName(scale) {
+            const scales = {
+                'institute': 'Институтское',
+                'university': 'Университетское',
+                'city': 'Городское',
+                'regional': 'Региональное',
+                'district': 'Окружное',
+                'federal': 'Федеральное'
+            };
+            return scales[scale] || scale;
+        }
+
+        function getStatusName(status) {
+            const statuses = {
+                'pending': 'На модерации',
+                'approved': 'Принято',
+                'rejected': 'Отклонено'
+            };
+            return statuses[status] || status;
+        }
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        document.addEventListener('DOMContentLoaded', loadChairmanData);
+
+        // Закрытие модальных окон по клику вне их
+        window.onclick = function(event) {
+            const eventModal = document.getElementById('eventModal');
+            const achievementModal = document.getElementById('achievementModal');
+            
+            if (event.target === eventModal) {
+                closeEventModal();
+            }
+            if (event.target === achievementModal) {
+                closeAchievementModal();
+            }
+        };
+
+        // Выход
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetch('/auth/logout', { method: 'POST' });
+            window.location.href = '/login';
+        });
+    </script>
+<%@ include file="../partials/event-modal.html" %>
+</body>
+</html>

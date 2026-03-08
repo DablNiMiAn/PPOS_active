@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Активист - Панель управления</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/dashboard" class="logo">АктивистРейтинг</a>
+            <div class="nav-links">
+                <a href="/dashboard" class="active">Главная</a>
+                <a href="#" id="logoutBtn">Выход</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Профиль -->
+        <div class="card">
+            <div class="profile-header">
+                <div class="profile-avatar" id="userInitials"></div>
+                <div class="profile-info">
+                    <h1 id="userName"></h1>
+                    <p id="userTeam"></p>
+                    <p>Мой рейтинг: <span class="rating-badge" id="userRating">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Детальный расчет рейтинга -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Детальный расчет рейтинга</h2>
+            </div>
+            <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="stat-box" style="text-align: center; padding: 15px; background: #f7fafc; border-radius: 8px;">
+                    <h3 style="color: #48bb78;">Мероприятия</h3>
+                    <p style="font-size: 2rem; font-weight: bold;" id="eventsPoints">0</p>
+                </div>
+                <div class="stat-box" style="text-align: center; padding: 15px; background: #f7fafc; border-radius: 8px;">
+                    <h3 style="color: #4299e1;">Достижения</h3>
+                    <p style="font-size: 2rem; font-weight: bold;" id="achievementsPoints">0</p>
+                </div>
+                <div class="stat-box" style="text-align: center; padding: 15px; background: #f7fafc; border-radius: 8px;">
+                    <h3 style="color: #f56565;">Штрафы</h3>
+                    <p style="font-size: 2rem; font-weight: bold;" id="penaltyPoints">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Рейтинги -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Локальный рейтинг (моя команда)</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Место</th>
+                                <th>Имя</th>
+                                <th>Рейтинг</th>
+                            </tr>
+                        </thead>
+                        <tbody id="localRatingBody">
+                            <tr>
+                                <td colspan="3" style="text-align: center;">Загрузка...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2>Общий рейтинг</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Место</th>
+                                <th>Имя</th>
+                                <th>Команда</th>
+                                <th>Рейтинг</th>
+                            </tr>
+                        </thead>
+                        <tbody id="globalRatingBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center;">Загрузка...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- История мероприятий -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Мои мероприятия</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Мероприятие</th>
+                            <th>Дата</th>
+                            <th>Моя роль</th>
+                            <th>Баллы</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventsBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center;">Загрузка...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Мои достижения -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Мои достижения</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Описание</th>
+                            <th>Баллы</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody id="achievementsBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center;">Загрузка...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let currentUserId = null;
+
+        // Загрузка данных пользователя
+        async function loadUserData() {
+            try {
+                console.log('Загрузка данных пользователя...');
+                
+                const response = await fetch('/api/user');
+                if (!response.ok) {
+                    console.log('Ошибка загрузки пользователя, перенаправление на вход');
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const user = await response.json();
+                console.log('Пользователь загружен:', user);
+                
+                currentUserId = user.id;
+                
+                // Заполнение профиля
+                document.getElementById('userName').textContent = user.full_name;
+                document.getElementById('userTeam').textContent = user.team_name || 'Без команды';
+                document.getElementById('userRating').textContent = user.total_rating;
+                
+                const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('userInitials').textContent = initials;
+                
+                // Загрузка всех данных
+                await Promise.all([
+                    loadLocalRating(user.team_id),
+                    loadGlobalRating(),
+                    loadUserEvents(user.id),
+                    loadUserAchievements(user.id),
+                    loadDetailedRating(user.id)
+                ]);
+                
+                console.log('Все данные загружены');
+                
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+            }
+        }
+        
+        // Загрузка локального рейтинга
+        async function loadLocalRating(teamId) {
+            if (!teamId) {
+                document.getElementById('localRatingBody').innerHTML = 
+                    '<tr><td colspan="3" style="text-align: center;">Вы не состоите в команде</td></tr>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/activist/team-rating/${teamId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const users = await response.json();
+                
+                const tbody = document.getElementById('localRatingBody');
+                tbody.innerHTML = '';
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Нет участников в команде</td></tr>';
+                    return;
+                }
+                
+                users.forEach((user, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${index + 1}</td>
+        <td><a href="/profile.html?id=${user.id}&role=activist" style="color: #667eea; text-decoration: none;">${user.full_name}</a></td>
+        <td><span class="rating-badge">${user.total_rating}</span></td>
+    `;
+    tbody.appendChild(row);
+});
+            } catch (error) {
+                console.error('Ошибка загрузки локального рейтинга:', error);
+                document.getElementById('localRatingBody').innerHTML = 
+                    '<tr><td colspan="3" style="text-align: center;">Ошибка загрузки данных</td></tr>';
+            }
+        }
+        
+        // Загрузка глобального рейтинга
+        async function loadGlobalRating() {
+            try {
+                const response = await fetch('/activist/global-rating');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const users = await response.json();
+                
+                const tbody = document.getElementById('globalRatingBody');
+                tbody.innerHTML = '';
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Нет данных</td></tr>';
+                    return;
+                }
+                
+                users.forEach((user, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${index + 1}</td>
+        <td><a href="/profile.html?id=${user.id}&role=activist" style="color: #667eea; text-decoration: none;">${user.full_name}</a></td>
+        <td>${user.team_name || 'Без команды'}</td>
+        <td><span class="rating-badge">${user.total_rating}</span></td>
+    `;
+    tbody.appendChild(row);
+});
+            } catch (error) {
+                console.error('Ошибка загрузки глобального рейтинга:', error);
+                document.getElementById('globalRatingBody').innerHTML = 
+                    '<tr><td colspan="4" style="text-align: center;">Ошибка загрузки данных</td></tr>';
+            }
+        }
+        
+        // Загрузка мероприятий пользователя
+        async function loadUserEvents(userId) {
+            try {
+                const response = await fetch(`/activist/user-events/${userId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const events = await response.json();
+                
+                const tbody = document.getElementById('eventsBody');
+                tbody.innerHTML = '';
+                
+                if (events.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Нет мероприятий</td></tr>';
+                    return;
+                }
+                
+                events.forEach(event => {
+    const row = document.createElement('tr');
+    const statusClass = event.status === 'approved' ? 'status-approved' : 
+                      event.status === 'rejected' ? 'status-rejected' : 'status-pending';
+    
+    row.innerHTML = `
+        <td><a href="/event-view.html?id=${event.id}&role=activist" style="color: #667eea; text-decoration: none;">${event.title}</a></td>
+        <td>${new Date(event.event_date).toLocaleDateString()}</td>
+        <td>${getRoleName(event.role)}</td>
+        <td>${event.points_earned || '—'}</td>
+        <td><span class="status-badge ${statusClass}">${getStatusName(event.status)}</span></td>
+    `;
+    tbody.appendChild(row);
+});
+            } catch (error) {
+                console.error('Ошибка загрузки мероприятий:', error);
+                document.getElementById('eventsBody').innerHTML = 
+                    '<tr><td colspan="5" style="text-align: center;">Ошибка загрузки данных</td></tr>';
+            }
+        }
+        
+        // Загрузка достижений пользователя
+        async function loadUserAchievements(userId) {
+            try {
+                const response = await fetch(`/activist/user-achievements/${userId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const achievements = await response.json();
+                
+                const tbody = document.getElementById('achievementsBody');
+                tbody.innerHTML = '';
+                
+                if (achievements.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Нет достижений</td></tr>';
+                    return;
+                }
+                
+                achievements.forEach(ach => {
+                    const row = document.createElement('tr');
+                    const statusClass = ach.status === 'approved' ? 'status-approved' : 
+                                      ach.status === 'rejected' ? 'status-rejected' : 'status-pending';
+                    
+                    row.innerHTML = `
+                        <td>${ach.title}</td>
+                        <td>${ach.description || '—'}</td>
+                        <td>${ach.points}</td>
+                        <td><span class="status-badge ${statusClass}">${getStatusName(ach.status)}</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки достижений:', error);
+                document.getElementById('achievementsBody').innerHTML = 
+                    '<tr><td colspan="4" style="text-align: center;">Ошибка загрузки данных</td></tr>';
+            }
+        }
+
+        // Загрузка детального рейтинга
+        async function loadDetailedRating(userId) {
+            try {
+                const response = await fetch(`/activist/user-rating-details/${userId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const details = await response.json();
+                
+                document.getElementById('eventsPoints').textContent = details.eventsPoints || 0;
+                document.getElementById('achievementsPoints').textContent = details.achievementsPoints || 0;
+                document.getElementById('penaltyPoints').textContent = details.penaltyPoints || 0;
+                
+            } catch (error) {
+                console.error('Ошибка загрузки детального рейтинга:', error);
+            }
+        }
+        
+        // Вспомогательные функции
+        function getRoleName(role) {
+            const roles = {
+                'volunteer': 'Волонтер',
+                'media': 'Медиа',
+                'organizer': 'Организатор'
+            };
+            return roles[role] || role;
+        }
+        
+        function getStatusName(status) {
+            const statuses = {
+                'pending': 'На модерации',
+                'approved': 'Принято',
+                'rejected': 'Отклонено'
+            };
+            return statuses[status] || status;
+        }
+        
+        // Выход
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            try {
+                await fetch('/auth/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Ошибка при выходе:', error);
+            }
+        });
+        
+        // Загрузка данных при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Страница загружена, начинаем загрузку данных...');
+            loadUserData();
+        });
+    </script>
+</body>
+</html>

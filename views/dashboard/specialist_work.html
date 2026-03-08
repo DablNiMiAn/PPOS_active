@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Специалист - Панель управления</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/modal.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/dashboard" class="logo">АктивистРейтинг</a>
+            <div class="nav-links">
+                <a href="/dashboard" class="active">Главная</a>
+                <a href="#" onclick="showCreateEventModal(); return false;">Создать мероприятие</a>
+                <a href="#" onclick="showCreateUserModal(); return false;">Создать пользователя</a>
+                <a href="#" onclick="showCreateTeamModal(); return false;">Создать команду</a>
+                <a href="#" onclick="showPenaltyModal(); return false;">Штраф</a>
+                <a href="#" id="logoutBtn">Выход</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Статистика системы -->
+        <div class="grid">
+            <div class="card">
+                <h3>Всего пользователей</h3>
+                <p style="font-size: 2rem; color: #667eea;" id="totalUsers">0</p>
+            </div>
+            <div class="card">
+                <h3>Проведено мероприятий</h3>
+                <p style="font-size: 2rem; color: #48bb78;" id="totalEvents">0</p>
+            </div>
+            <div class="card">
+                <h3>Ожидают модерации</h3>
+                <p style="font-size: 2rem; color: #ecc94b;" id="pendingEvents">0</p>
+                <p style="font-size: 1rem;">мероприятий: <span id="pendingEventsCount">0</span></p>
+                <p style="font-size: 1rem;">достижений: <span id="pendingAchievementsCount">0</span></p>
+            </div>
+        </div>
+
+        <!-- Модерация мероприятий -->
+        <div class="card">
+    <div class="card-header">
+        <h2>Мероприятия на модерации</h2>
+    </div>
+    <div id="pendingEventsList" class="table-responsive">
+        <!-- Таблица с кнопками принять/отклонить и подробнее (для модерации) -->
+    </div>
+</div>
+
+        <!-- Модерация достижений -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Достижения на модерации</h2>
+            </div>
+            <div id="pendingAchievementsList" class="table-responsive">
+                <!-- Данные загружаются через JS -->
+            </div>
+        </div>
+
+        <!-- Управление пользователями -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Управление пользователями</h2>
+                <button class="btn btn-primary" onclick="showCreateUserModal()">+ Создать</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Email</th>
+                            <th>Роль</th>
+                            <th>Команда</th>
+                            <th>Рейтинг</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersList">
+                        <tr>
+                            <td colspan="7" style="text-align: center;">Загрузка...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Топ активистов -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Топ-5 активистов</h2>
+            </div>
+            <div id="topActivistsList" class="table-responsive">
+                <!-- Данные загружаются через JS -->
+            </div>
+        </div>
+    </div>
+    <!-- Все мероприятия -->
+<div class="card">
+    <div class="card-header">
+        <h2>Все мероприятия</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Создатель</th>
+                    <th>Команда</th>
+                    <th>Дата</th>
+                    <th>Масштаб</th>
+                    <th>Участников</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody id="allEventsBody">
+                <tr>
+                    <td colspan="8" style="text-align: center;">Загрузка...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+    <!-- Модальное окно создания мероприятия (унифицированное) -->
+    <div id="eventModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Создание мероприятия</h2>
+            <span class="close" onclick="closeEventModal()">&times;</span>
+        </div>
+        <form id="eventForm">
+            <div class="form-group">
+                <label for="eventTitle">Название мероприятия</label>
+                <input type="text" id="eventTitle" name="title" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="eventDescription">Описание</label>
+                <textarea id="eventDescription" name="description" rows="2" required></textarea>
+            </div>
+            
+            <div class="form-row" style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label for="eventDate">Дата проведения</label>
+                    <input type="date" id="eventDate" name="event_date" required>
+                </div>
+                
+                <div class="form-group" style="flex: 1;">
+                    <label for="eventScale">Масштаб</label>
+                    <select id="eventScale" name="scale" required>
+                        <option value="institute">Институтское (1)</option>
+                        <option value="university">Университетское (2)</option>
+                        <option value="city">Городское (3)</option>
+                        <option value="regional">Региональное (4)</option>
+                        <option value="district">Окружное (5)</option>
+                        <option value="federal">Федеральное (6)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Поиск участников</label>
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="userSearch" placeholder="Поиск по имени..." oninput="EventManager.searchUsers()">
+                        <span class="stats-badge" id="searchCount">0</span>
+                    </div>
+                    
+                    <div id="modalUsersList" class="users-list">
+                        <div style="text-align: center; padding: 15px;">Загрузка...</div>
+                    </div>
+                    
+                    <div id="modalPagination" class="pagination"></div>
+                </div>
+            </div>
+            
+            <div class="selected-users">
+                <h4>Выбранные участники (<span id="selectedCount">0</span>)</h4>
+                <div id="selectedUsersList"></div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="submitEventBtn">Создать мероприятие</button>
+        </form>
+    </div>
+</div>
+
+    <!-- Модальное окно создания пользователя -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Создание пользователя</h2>
+                <span class="close" onclick="closeUserModal()">&times;</span>
+            </div>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="username">Имя пользователя</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="full_name">Полное имя</label>
+                    <input type="text" id="full_name" name="full_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">Роль</label>
+                    <select id="role" name="role" required>
+                        <option value="activist">Активист</option>
+                        <option value="chairman">Председатель</option>
+                        <option value="specialist">Специалист</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="team_id">Команда</label>
+                    <select id="team_id" name="team_id">
+                        <option value="">Без команды</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Создать</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания команды -->
+    <div id="teamModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Создание команды</h2>
+                <span class="close" onclick="closeTeamModal()">&times;</span>
+            </div>
+            <form id="teamForm">
+                <div class="form-group">
+                    <label for="teamName">Название команды</label>
+                    <input type="text" id="teamName" name="name" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Создать команду</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно штрафа -->
+<div id="penaltyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Выписать штраф</h2>
+            <span class="close" onclick="closePenaltyModal()">&times;</span>
+        </div>
+        <form id="penaltyForm">
+            <div class="form-group">
+                <label for="penaltyUserSearch">Поиск активиста</label>
+                <input type="text" id="penaltyUserSearch" placeholder="Введите имя для поиска..." oninput="searchPenaltyUsers()">
+            </div>
+            
+            <div class="form-group">
+                <label for="penaltyUser">Активист</label>
+                <select id="penaltyUser" name="user_id" size="5" required style="height: auto; min-height: 120px;">
+                    <option value="">Загрузка пользователей...</option>
+                </select>
+                <small style="color: #666;">Найдено: <span id="penaltyUsersCount">0</span></small>
+            </div>
+            
+            <div class="form-group">
+                <label for="penaltyPoints">Баллы (штраф)</label>
+                <input type="number" id="penaltyPoints" name="points" min="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="penaltyReason">Причина</label>
+                <textarea id="penaltyReason" name="reason" rows="3" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-danger">Выписать штраф</button>
+        </form>
+    </div>
+</div>
+
+    <script>
+        // ==================== ГЛОБАЛЬНЫЙ МЕНЕДЖЕР СОБЫТИЙ ====================
+        // ==================== МЕНЕДЖЕР СОБЫТИЙ ДЛЯ МОДАЛЬНОГО ОКНА ====================
+const EventManager = {
+    selectedUsers: new Map(),
+    allUsers: [],
+    currentPage: 1,
+    itemsPerPage: 15,
+    searchQuery: '',
+    
+    init: async function() {
+        await this.loadAllUsers();
+        this.renderUserList();
+    },
+    
+    loadAllUsers: async function() {
+        try {
+            const response = await fetch('/specialist/all-users');
+            this.allUsers = await response.json();
+            console.log('✅ Загружено пользователей:', this.allUsers.length);
+        } catch (error) {
+            console.error('❌ Ошибка загрузки пользователей:', error);
+        }
+    },
+    
+    searchUsers: function() {
+        this.searchQuery = document.getElementById('userSearch').value.toLowerCase();
+        this.currentPage = 1;
+        this.renderUserList();
+    },
+    
+    getFilteredUsers: function() {
+        let users = this.allUsers;
+        
+        if (this.searchQuery) {
+            users = users.filter(user => 
+                user.full_name.toLowerCase().includes(this.searchQuery)
+            );
+        }
+        
+        return users;
+    },
+    
+    renderUserList: function() {
+        const usersList = document.getElementById('modalUsersList');
+        if (!usersList) return;
+        
+        const filteredUsers = this.getFilteredUsers();
+        
+        document.getElementById('searchCount').textContent = filteredUsers.length;
+        
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = Math.min(startIndex + this.itemsPerPage, filteredUsers.length);
+        const pageUsers = filteredUsers.slice(startIndex, endIndex);
+        
+        usersList.innerHTML = '';
+        
+        if (pageUsers.length === 0) {
+            usersList.innerHTML = '<div style="text-align: center; padding: 15px;">Пользователи не найдены</div>';
+            return;
+        }
+        
+        pageUsers.forEach(user => {
+            const isSelected = this.selectedUsers.has(user.id);
+            const userDiv = document.createElement('div');
+            userDiv.className = `user-item ${isSelected ? 'selected' : ''}`;
+            
+            userDiv.innerHTML = `
+                <div class="user-info">
+                    <div class="user-name">${user.full_name}</div>
+                    <div class="user-meta">
+                        <span class="user-team">${user.team_name || 'Без команды'}</span>
+                        <span class="user-rating">⭐ ${user.total_rating || 0}</span>
+                    </div>
+                </div>
+                <button class="add-button" onclick="EventManager.addUser(${user.id}, '${user.full_name.replace(/'/g, "\\'")}')" 
+                        ${isSelected ? 'disabled' : ''}>
+                    ${isSelected ? 'Добавлен' : 'Добавить'}
+                </button>
+            `;
+            
+            usersList.appendChild(userDiv);
+        });
+        
+        this.renderPagination(filteredUsers.length);
+    },
+    
+    renderPagination: function(totalItems) {
+        const pagination = document.getElementById('modalPagination');
+        if (!pagination) return;
+        
+        const totalPages = Math.ceil(totalItems / this.itemsPerPage);
+        
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+        
+        let html = '';
+        html += `<button onclick="EventManager.changePage(${this.currentPage - 1})" ${this.currentPage === 1 ? 'disabled' : ''}>←</button>`;
+        
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= this.currentPage - 2 && i <= this.currentPage + 2)) {
+                html += `<button onclick="EventManager.changePage(${i})" class="${i === this.currentPage ? 'active' : ''}">${i}</button>`;
+            } else if (i === this.currentPage - 3 || i === this.currentPage + 3) {
+                html += `<button disabled>...</button>`;
+            }
+        }
+        
+        html += `<button onclick="EventManager.changePage(${this.currentPage + 1})" ${this.currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+        
+        pagination.innerHTML = html;
+    },
+    
+    changePage: function(page) {
+        this.currentPage = page;
+        this.renderUserList();
+    },
+    
+    addUser: function(userId, userName) {
+        if (this.selectedUsers.has(userId)) return;
+        
+        this.selectedUsers.set(userId, {
+            id: userId,
+            name: userName,
+            role: 'volunteer'
+        });
+        
+        this.updateSelectedUsersList();
+        this.renderUserList();
+    },
+    
+    updateUserRole: function(userId, role) {
+        if (this.selectedUsers.has(userId)) {
+            const user = this.selectedUsers.get(userId);
+            user.role = role;
+            this.selectedUsers.set(userId, user);
+            this.updateSelectedUsersList();
+        }
+    },
+    
+    removeUser: function(userId) {
+        this.selectedUsers.delete(userId);
+        this.updateSelectedUsersList();
+        this.renderUserList();
+    },
+    
+    updateSelectedUsersList: function() {
+        const container = document.getElementById('selectedUsersList');
+        const countSpan = document.getElementById('selectedCount');
+        
+        countSpan.textContent = this.selectedUsers.size;
+        
+        if (this.selectedUsers.size === 0) {
+            container.innerHTML = '<p style="color: #666; text-align: center;">Нет выбранных участников</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        this.selectedUsers.forEach((user, userId) => {
+            const div = document.createElement('div');
+            div.className = 'selected-user-item';
+            div.innerHTML = `
+                <div style="display: flex; align-items: center; flex: 1; gap: 8px;">
+                    <span style="flex: 1;">${user.name}</span>
+                    <select class="role-select" onchange="EventManager.updateUserRole(${userId}, this.value)">
+                        <option value="volunteer" ${user.role === 'volunteer' ? 'selected' : ''}>Волонтер (1)</option>
+                        <option value="media" ${user.role === 'media' ? 'selected' : ''}>Медиа (2)</option>
+                        <option value="organizer" ${user.role === 'organizer' ? 'selected' : ''}>Организатор (3)</option>
+                    </select>
+                </div>
+                <button type="button" class="remove-button" onclick="EventManager.removeUser(${userId})">✕</button>
+            `;
+            container.appendChild(div);
+        });
+    },
+    
+    reset: function() {
+        this.selectedUsers.clear();
+        this.currentPage = 1;
+        this.searchQuery = '';
+        this.updateSelectedUsersList();
+        
+        const searchInput = document.getElementById('userSearch');
+        if (searchInput) searchInput.value = '';
+        
+        this.renderUserList();
+    },
+    
+    getParticipants: function() {
+        const participants = [];
+        this.selectedUsers.forEach((user, userId) => {
+            participants.push({
+                userId: userId,
+                role: user.role
+            });
+        });
+        return participants;
+    }
+};
+
+// ==================== ФУНКЦИИ ДЛЯ РАБОТЫ С ПОЛЬЗОВАТЕЛЯМИ ====================
+// Переименуем список пользователей на основной странице
+function renderUsersList(users) {
+    const tbody = document.getElementById('usersList');
+    tbody.innerHTML = '';
+    
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.full_name}</td>
+            <td>${user.email}</td>
+            <td>
+                <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
+                    <option value="activist" ${user.role === 'activist' ? 'selected' : ''}>Активист</option>
+                    <option value="chairman" ${user.role === 'chairman' ? 'selected' : ''}>Председатель</option>
+                    <option value="specialist" ${user.role === 'specialist' ? 'selected' : ''}>Специалист</option>
+                </select>
+            </td>
+            <td>${user.team_name || '—'}</td>
+            <td><span class="rating-badge">${user.total_rating}</span></td>
+            <td>
+                <button class="btn btn-danger btn-small" onclick="deleteUser(${user.id})">Удалить</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Обновим функцию loadUsers
+async function loadUsers() {
+    try {
+        const response = await fetch('/specialist/users');
+        const users = await response.json();
+        renderUsersList(users);
+    } catch (error) {
+        console.error('Ошибка загрузки пользователей:', error);
+    }
+}
+
+        // ==================== ЗАГРУЗКА ДАННЫХ ====================
+        async function loadSpecialistData() {
+    try {
+        const userResponse = await fetch('/api/user');
+        if (!userResponse.ok) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        // Загрузка статистики
+        await loadSystemStats();
+        
+        // Загрузка на модерацию
+        await loadPendingEvents();
+        await loadPendingAchievements();
+        
+        // Загрузка всех мероприятий
+        await loadAllEvents();
+        
+        // Загрузка пользователей
+        await loadUsers();
+        
+        // Загрузка команд для селектов
+        await loadTeams();
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+function getStatusName(status) {
+    const statuses = {
+        'pending': 'На модерации',
+        'approved': 'Принято',
+        'rejected': 'Отклонено'
+    };
+    return statuses[status] || status;
+}
+
+        async function loadSystemStats() {
+            try {
+                const response = await fetch('/specialist/system-stats');
+                const stats = await response.json();
+                
+                console.log('📊 Статистика системы:', stats);
+                
+                document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+                document.getElementById('totalEvents').textContent = stats.totalEvents || 0;
+                document.getElementById('pendingEvents').textContent = stats.pendingEvents || 0;
+                document.getElementById('pendingEventsCount').textContent = stats.pendingEvents || 0;
+                document.getElementById('pendingAchievementsCount').textContent = stats.pendingAchievements || 0;
+                
+                // Топ активистов
+                const topList = document.getElementById('topActivistsList');
+                if (stats.topActivists && stats.topActivists.length > 0) {
+                    let html = '<table class="table"><tr><th>Имя</th><th>Команда</th><th>Рейтинг</th></tr>';
+                    stats.topActivists.forEach(activist => {
+                        html += `<tr>
+                            <td>${activist.full_name}</td>
+                            <td>${activist.team_name || '—'}</td>
+                            <td><span class="rating-badge">${activist.total_rating}</span></td>
+                        </tr>`;
+                    });
+                    html += '</table>';
+                    topList.innerHTML = html;
+                } else {
+                    topList.innerHTML = '<p>Нет данных</p>';
+                }
+                
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+
+        async function loadAllEvents() {
+    try {
+        const response = await fetch('/specialist/all-events');
+        const events = await response.json();
+        
+        const tbody = document.getElementById('allEventsBody');
+        tbody.innerHTML = '';
+        
+        if (events.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Нет мероприятий</td></tr>';
+            return;
+        }
+        
+        events.forEach(event => {
+            const row = document.createElement('tr');
+            const statusClass = event.status === 'approved' ? 'status-approved' : 
+                              event.status === 'rejected' ? 'status-rejected' : 'status-pending';
+            
+            row.innerHTML = `
+    <td>${user.id}</td>
+    <td><a href="/profile.html?id=${user.id}&role=specialist" style="color: #667eea; text-decoration: none;">${user.full_name}</a></td>
+    <td>${user.email}</td>
+    <td>
+        <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
+            <option value="activist" ${user.role === 'activist' ? 'selected' : ''}>Активист</option>
+            <option value="chairman" ${user.role === 'chairman' ? 'selected' : ''}>Председатель</option>
+            <option value="specialist" ${user.role === 'specialist' ? 'selected' : ''}>Специалист</option>
+        </select>
+    </td>
+    <td>${user.team_name || '—'}</td>
+    <td><span class="rating-badge">${user.total_rating}</span></td>
+    <td>
+        <button class="btn btn-danger btn-small" onclick="deleteUser(${user.id})">Удалить</button>
+    </td>
+`;
+            tbody.appendChild(row);
+        });
+        
+    } catch (error) {
+        console.error('Ошибка загрузки всех мероприятий:', error);
+    }
+}
+
+        // Загрузка мероприятий на модерацию
+async function loadPendingEvents() {
+    try {
+        const response = await fetch('/specialist/pending-events');
+        const events = await response.json();
+        
+        const container = document.getElementById('pendingEventsList');
+        
+        if (events.length === 0) {
+            container.innerHTML = '<p>Нет мероприятий на модерации</p>';
+            return;
+        }
+        
+        let html = '<table class="table"><tr><th>Название</th><th>Создатель</th><th>Команда</th><th>Дата</th><th>Масштаб</th><th>Участников</th><th>Действия</th></tr>';
+        
+        events.forEach(event => {
+            html += `<tr>
+                <td><a href="/event-detail.html?id=${event.id}&role=specialist" style="color: #667eea; text-decoration: none; font-weight: 500;">${event.title}</a></td>
+                <td>${event.creator_name}</td>
+                <td>${event.team_name || '—'}</td>
+                <td>${new Date(event.event_date).toLocaleDateString()}</td>
+                <td>${getScaleName(event.scale)} (${event.scale_value} баллов)</td>
+                <td>${event.participants_count || 0}</td>
+                <td>
+                    <button class="btn btn-success btn-small" onclick="quickApprove(${event.id})">✓ Принять</button>
+                    <button class="btn btn-danger btn-small" onclick="quickReject(${event.id})">✗ Отклонить</button>
+                    <a href="/event-detail.html?id=${event.id}&role=specialist" class="btn btn-primary btn-small">Подробнее</a>
+                </td>
+            </tr>`;
+        });
+        
+        html += '</table>';
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Ошибка загрузки мероприятий:', error);
+    }
+}
+
+// Загрузка всех мероприятий (только для просмотра)
+async function loadAllEvents() {
+    try {
+        const response = await fetch('/specialist/all-events');
+        const events = await response.json();
+        
+        const tbody = document.getElementById('allEventsBody');
+        tbody.innerHTML = '';
+        
+        if (events.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Нет мероприятий</td></tr>';
+            return;
+        }
+        
+        events.forEach(event => {
+            const row = document.createElement('tr');
+            const statusClass = event.status === 'approved' ? 'status-approved' : 
+                              event.status === 'rejected' ? 'status-rejected' : 'status-pending';
+            
+            row.innerHTML = `
+                <td><a href="/event-detail.html?id=${event.id}&role=specialist" style="color: #667eea; text-decoration: none;">${event.title}</a></td>
+                <td>${event.creator_name}</td>
+                <td>${event.team_name || '—'}</td>
+                <td>${new Date(event.event_date).toLocaleDateString()}</td>
+                <td>${getScaleName(event.scale)} (${event.scale_value} баллов)</td>
+                <td>${event.participants_count || 0}</td>
+                <td><span class="status-badge ${statusClass}">${getStatusName(event.status)}</span></td>
+                <td>
+                    <a href="/event-detail.html?id=${event.id}&role=specialist" class="btn btn-primary btn-small">Просмотр</a>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+    } catch (error) {
+        console.error('Ошибка загрузки всех мероприятий:', error);
+    }
+}
+
+// Быстрое принятие (без перехода на страницу)
+async function quickApprove(eventId) {
+    if (!confirm('Принять это мероприятие?')) return;
+    
+    try {
+        const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                status: 'approved',
+                reason: '' 
+            })
+        });
+        
+        if (response.ok) {
+            alert('Мероприятие принято');
+            loadPendingEvents();
+            loadAllEvents();
+            loadSystemStats();
+        } else {
+            const result = await response.json();
+            alert(result.error || 'Ошибка при модерации');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка соединения с сервером');
+    }
+}
+
+// Быстрый отказ (с причиной в диалоге)
+async function quickReject(eventId) {
+    const reason = prompt('Укажите причину отказа:');
+    if (!reason) return;
+    
+    try {
+        const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                status: 'rejected',
+                reason: reason 
+            })
+        });
+        
+        if (response.ok) {
+            alert('Мероприятие отклонено');
+            loadPendingEvents();
+            loadAllEvents();
+            loadSystemStats();
+        } else {
+            const result = await response.json();
+            alert(result.error || 'Ошибка при модерации');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка соединения с сервером');
+    }
+}
+
+// Открыть страницу модерации с деталями
+function openModerationDetail(eventId) {
+    window.location.href = `/moderate-event.html?id=${eventId}`;
+}
+
+// Быстрое принятие (через отдельную страницу)
+function openModerationPage(eventId) {
+    window.location.href = `/moderate-event.html?id=${eventId}&action=approve`;
+}
+
+// Быстрый отказ (через отдельную страницу)
+function openRejectPage(eventId) {
+    window.location.href = `/moderate-event.html?id=${eventId}&action=reject`;
+}
+
+// Загрузка всех мероприятий (только для просмотра)
+async function loadAllEvents() {
+    try {
+        const response = await fetch('/specialist/all-events');
+        const events = await response.json();
+        
+        const tbody = document.getElementById('allEventsBody');
+        tbody.innerHTML = '';
+        
+        if (events.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Нет мероприятий</td></tr>';
+            return;
+        }
+        
+        events.forEach(event => {
+            const row = document.createElement('tr');
+            const statusClass = event.status === 'approved' ? 'status-approved' : 
+                              event.status === 'rejected' ? 'status-rejected' : 'status-pending';
+            
+            row.innerHTML = `
+                <td><a href="/event-view.html?id=${event.id}&role=specialist" style="color: #667eea; text-decoration: none;">${event.title}</a></td>
+                <td>${event.creator_name}</td>
+                <td>${event.team_name || '—'}</td>
+                <td>${new Date(event.event_date).toLocaleDateString()}</td>
+                <td>${getScaleName(event.scale)} (${event.scale_value} баллов)</td>
+                <td>${event.participants_count || 0}</td>
+                <td><span class="status-badge ${statusClass}">${getStatusName(event.status)}</span></td>
+                <td>
+                    <a href="/event-view.html?id=${event.id}&role=specialist" class="btn btn-primary btn-small">Просмотр</a>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+    } catch (error) {
+        console.error('Ошибка загрузки всех мероприятий:', error);
+    }
+}
+
+        async function loadPendingAchievements() {
+            try {
+                const response = await fetch('/specialist/pending-achievements');
+                const achievements = await response.json();
+                
+                const container = document.getElementById('pendingAchievementsList');
+                
+                if (achievements.length === 0) {
+                    container.innerHTML = '<p>Нет достижений на модерации</p>';
+                    return;
+                }
+                
+                let html = '<table class="table"><tr><th>Достижение</th><th>Активист</th><th>Команда</th><th>Создатель</th><th>Баллы</th><th>Действия</th></tr>';
+                
+                achievements.forEach(ach => {
+                    html += `<tr>
+                        <td>${ach.title}</td>
+                        <td>${ach.user_name}</td>
+                        <td>${ach.team_name || '—'}</td>
+                        <td>${ach.creator_name}</td>
+                        <td>${ach.points}</td>
+                        <td>
+                            <button class="btn btn-success btn-small" onclick="approveAchievement(${ach.id})">✓</button>
+                            <button class="btn btn-danger btn-small" onclick="rejectAchievement(${ach.id})">✗</button>
+                        </td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Ошибка загрузки достижений:', error);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/specialist/users');
+                const users = await response.json();
+                
+                const tbody = document.getElementById('usersList');
+                tbody.innerHTML = '';
+                
+                users.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${user.id}</td>
+                        <td>${user.full_name}</td>
+                        <td>${user.email}</td>
+                        <td>
+                            <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
+                                <option value="activist" ${user.role === 'activist' ? 'selected' : ''}>Активист</option>
+                                <option value="chairman" ${user.role === 'chairman' ? 'selected' : ''}>Председатель</option>
+                                <option value="specialist" ${user.role === 'specialist' ? 'selected' : ''}>Специалист</option>
+                            </select>
+                        </td>
+                        <td>${user.team_name || '—'}</td>
+                        <td><span class="rating-badge">${user.total_rating}</span></td>
+                        <td>
+                            <button class="btn btn-danger btn-small" onclick="deleteUser(${user.id})">Удалить</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error);
+            }
+        }
+
+        async function loadTeams() {
+            try {
+                const response = await fetch('/api/teams');
+                const teams = await response.json();
+                
+                const teamSelect = document.getElementById('team_id');
+                teamSelect.innerHTML = '<option value="">Без команды</option>';
+                
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.id;
+                    option.textContent = team.name;
+                    teamSelect.appendChild(option);
+                });
+                
+                const penaltyUserSelect = document.getElementById('penaltyUser');
+                const usersResponse = await fetch('/specialist/users');
+                const users = await usersResponse.json();
+                
+                penaltyUserSelect.innerHTML = '<option value="">Выберите активиста</option>';
+                users.filter(u => u.role === 'activist').forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = `${user.full_name} (рейтинг: ${user.total_rating})`;
+                    penaltyUserSelect.appendChild(option);
+                });
+                
+            } catch (error) {
+                console.error('Ошибка загрузки команд:', error);
+            }
+        }
+
+        // ==================== ФУНКЦИИ МОДЕРАЦИИ ====================
+        async function approveEvent(eventId) {
+    if (!confirm('Принять это мероприятие?')) return;
+    
+    try {
+        const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                status: 'approved',
+                reason: '' 
+            })
+        });
+        
+        if (response.ok) {
+            alert('Мероприятие принято');
+            loadPendingEvents();
+            loadAllEvents();
+            loadSystemStats();
+        } else {
+            const result = await response.json();
+            alert(result.error || 'Ошибка при модерации');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка соединения с сервером');
+    }
+}
+
+        async function rejectEvent(eventId) {
+            if (!confirm('Отклонить это мероприятие?')) return;
+            
+            try {
+                const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'rejected' })
+                });
+                
+                if (response.ok) {
+                    alert('Мероприятие отклонено');
+                    loadPendingEvents();
+                } else {
+                    const result = await response.json();
+                    alert(result.error || 'Ошибка при модерации');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        // Быстрое принятие (без детального просмотра)
+async function quickApprove(eventId) {
+    if (!confirm('Принять мероприятие?')) return;
+    
+    try {
+        const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'approved' })
+        });
+        
+        if (response.ok) {
+            alert('Мероприятие принято');
+            loadPendingEvents();
+            loadSystemStats();
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+// Быстрый отказ (с причиной в диалоге)
+async function quickReject(eventId) {
+    const reason = prompt('Укажите причину отказа:');
+    if (!reason) return;
+    
+    try {
+        const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                status: 'rejected',
+                reason: reason 
+            })
+        });
+        
+        if (response.ok) {
+            alert('Мероприятие отклонено');
+            loadPendingEvents();
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+        async function approveAchievement(achievementId) {
+            if (!confirm('Принять это достижение?')) return;
+            
+            try {
+                const response = await fetch(`/specialist/moderate-achievement/${achievementId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+                
+                if (response.ok) {
+                    alert('Достижение принято');
+                    loadPendingAchievements();
+                    loadSystemStats();
+                } else {
+                    const result = await response.json();
+                    alert(result.error || 'Ошибка при модерации');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        async function rejectAchievement(achievementId) {
+            if (!confirm('Отклонить это достижение?')) return;
+            
+            try {
+                const response = await fetch(`/specialist/moderate-achievement/${achievementId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'rejected' })
+                });
+                
+                if (response.ok) {
+                    alert('Достижение отклонено');
+                    loadPendingAchievements();
+                } else {
+                    const result = await response.json();
+                    alert(result.error || 'Ошибка при модерации');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        async function changeUserRole(userId, newRole) {
+            if (!confirm('Изменить роль пользователя?')) return;
+            
+            try {
+                const response = await fetch(`/specialist/user/${userId}/role`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role: newRole })
+                });
+                
+                if (response.ok) {
+                    alert('Роль успешно изменена');
+                } else {
+                    alert('Ошибка при изменении роли');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('Вы уверены, что хотите удалить пользователя? Это действие нельзя отменить.')) return;
+            
+            try {
+                const response = await fetch(`/specialist/user/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('Пользователь удален');
+                    loadUsers();
+                    loadSystemStats();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Ошибка при удалении пользователя');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        // ==================== МОДАЛЬНЫЕ ОКНА ====================
+        function showCreateEventModal() {
+    document.getElementById('eventModal').style.display = 'block';
+    document.getElementById('eventForm').reset();
+    EventManager.reset();
+    EventManager.init();
+}
+
+        function closeEventModal() {
+            document.getElementById('eventModal').style.display = 'none';
+        }
+
+        function showCreateUserModal() {
+            document.getElementById('userModal').style.display = 'block';
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        function showCreateTeamModal() {
+            document.getElementById('teamModal').style.display = 'block';
+        }
+
+        function closeTeamModal() {
+            document.getElementById('teamModal').style.display = 'none';
+        }
+
+        function showPenaltyModal() {
+            document.getElementById('penaltyModal').style.display = 'block';
+        }
+
+        function closePenaltyModal() {
+            document.getElementById('penaltyModal').style.display = 'none';
+        }
+
+        // ==================== ОБРАБОТКА ФОРМ ====================
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (EventManager.selectedUsers.size === 0) {
+                alert('Добавьте хотя бы одного участника');
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            const participants = EventManager.getParticipants();
+            
+            const data = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                event_date: formData.get('event_date'),
+                scale: formData.get('scale'),
+                participants: participants
+            };
+            
+            console.log('📝 Отправка данных:', data);
+            
+            try {
+                const response = await fetch('/specialist/event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('📥 Ответ сервера:', result);
+                
+                if (response.ok) {
+                    alert('Мероприятие успешно создано!');
+                    closeEventModal();
+                    loadSystemStats();
+                } else {
+                    alert(result.error || 'Ошибка при создании мероприятия');
+                }
+                
+            } catch (error) {
+                console.error('❌ Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        });
+
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/specialist/user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Пользователь успешно создан');
+                    closeUserModal();
+                    e.target.reset();
+                    loadUsers();
+                    loadSystemStats();
+                } else {
+                    alert(result.error || 'Ошибка при создании пользователя');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        });
+
+        document.getElementById('teamForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/specialist/team', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Команда успешно создана');
+                    closeTeamModal();
+                    e.target.reset();
+                    loadTeams();
+                } else {
+                    alert(result.error || 'Ошибка при создании команды');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        });
+
+        document.getElementById('penaltyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    
+    try {
+        const response = await fetch('/specialist/penalty', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(`Штраф выписан!\nБыло: ${result.oldRating} баллов\nСтало: ${result.newRating} баллов\nИзменение: ${result.change} баллов`);
+            closePenaltyModal();
+            e.target.reset();
+            loadSystemStats();
+            loadUsers();
+        } else {
+            alert(result.error || 'Ошибка при выписке штрафа');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Ошибка соединения с сервером');
+    }
+});
+
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+        function getScaleName(scale) {
+    const scales = {
+        'institute': 'Институтское',
+        'university': 'Университетское',
+        'city': 'Городское',
+        'regional': 'Региональное',
+        'district': 'Окружное',
+        'federal': 'Федеральное'
+    };
+    return scales[scale] || scale;
+}
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        document.addEventListener('DOMContentLoaded', loadSpecialistData);
+
+        // Закрытие модальных окон по клику вне их
+        window.onclick = function(event) {
+            const modals = ['eventModal', 'userModal', 'teamModal', 'penaltyModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        };
+
+        // Выход
+        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            await fetch('/auth/logout', { method: 'POST' });
+            window.location.href = '/login';
+        });
+        // ==================== ПЕРЕМЕННЫЕ ДЛЯ ШТРАФОВ ====================
+let allActivists = [];
+let filteredActivists = [];
+
+// Загрузка всех активистов для штрафов
+async function loadActivistsForPenalty() {
+    try {
+        const response = await fetch('/specialist/users');
+        const users = await response.json();
+        
+        // Фильтруем только активистов
+        allActivists = users.filter(u => u.role === 'activist');
+        filteredActivists = [...allActivists];
+        
+        updatePenaltyUsersList();
+        console.log(`✅ Загружено ${allActivists.length} активистов для штрафов`);
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки активистов:', error);
+    }
+}
+
+// Поиск активистов для штрафа
+function searchPenaltyUsers() {
+    const searchText = document.getElementById('penaltyUserSearch').value.toLowerCase();
+    
+    if (!searchText) {
+        filteredActivists = [...allActivists];
+    } else {
+        filteredActivists = allActivists.filter(user => 
+            user.full_name.toLowerCase().includes(searchText) ||
+            (user.username && user.username.toLowerCase().includes(searchText)) ||
+            (user.email && user.email.toLowerCase().includes(searchText))
+        );
+    }
+    
+    updatePenaltyUsersList();
+}
+
+// Обновление списка активистов в селекте
+function updatePenaltyUsersList() {
+    const select = document.getElementById('penaltyUser');
+    const countSpan = document.getElementById('penaltyUsersCount');
+    
+    select.innerHTML = '';
+    countSpan.textContent = filteredActivists.length;
+    
+    if (filteredActivists.length === 0) {
+        select.innerHTML = '<option value="">Пользователи не найдены</option>';
+        return;
+    }
+    
+    filteredActivists.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = `${user.full_name} (рейтинг: ${user.total_rating}, команда: ${user.team_name || 'Нет'})`;
+        select.appendChild(option);
+    });
+}
+
+// Обновляем функцию showPenaltyModal
+function showPenaltyModal() {
+    document.getElementById('penaltyModal').style.display = 'block';
+    document.getElementById('penaltyForm').reset();
+    document.getElementById('penaltyUserSearch').value = '';
+    loadActivistsForPenalty();
+}
+    </script>
+</body>
+</html>

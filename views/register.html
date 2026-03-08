@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Рейтинг активистов</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">АктивистРейтинг</a>
+            <div class="nav-links">
+                <a href="/">Главная</a>
+                <a href="/login">Вход</a>
+                <a href="/register" class="active">Регистрация</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div style="max-width: 500px; margin: 50px auto;">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Регистрация</h2>
+                </div>
+                
+                <div id="alert" class="alert" style="display: none;"></div>
+                
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="username">Имя пользователя</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="full_name">Полное имя</label>
+                        <input type="text" id="full_name" name="full_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="team_id">Команда (необязательно)</label>
+                        <select id="team_id" name="team_id">
+                            <option value="">Выберите команду</option>
+                        </select>
+                        <div id="teams-loading" style="color: #666; font-size: 0.9rem; margin-top: 5px;">Загрузка команд...</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Пароль</label>
+                        <input type="password" id="password" name="password" required minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm_password">Подтвердите пароль</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Зарегистрироваться</button>
+                </form>
+                
+                <p style="text-align: center; margin-top: 20px;">
+                    Уже есть аккаунт? <a href="/login">Войдите</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Функция для загрузки команд
+        async function loadTeams() {
+            const teamsLoading = document.getElementById('teams-loading');
+            const teamSelect = document.getElementById('team_id');
+            
+            try {
+                console.log('🔄 Загрузка списка команд...');
+                
+                // Пробуем разные возможные URL
+                let response = null;
+                let urls = [
+                    '/activist/teams',
+                    '/api/teams',
+                    '/teams'
+                ];
+                
+                for (const url of urls) {
+                    try {
+                        console.log(`Пробуем URL: ${url}`);
+                        response = await fetch(url);
+                        if (response.ok) {
+                            console.log(`✅ Успешно загружено с ${url}`);
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`❌ ${url} не работает`);
+                    }
+                }
+                
+                if (!response || !response.ok) {
+                    throw new Error('Не удалось загрузить список команд');
+                }
+                
+                const teams = await response.json();
+                console.log('✅ Загружены команды:', teams);
+                
+                // Очищаем селект
+                teamSelect.innerHTML = '<option value="">Выберите команду</option>';
+                
+                if (teams && teams.length > 0) {
+                    teams.forEach(team => {
+                        const option = document.createElement('option');
+                        option.value = team.id;
+                        option.textContent = team.name;
+                        teamSelect.appendChild(option);
+                    });
+                    teamsLoading.style.display = 'none';
+                } else {
+                    teamSelect.innerHTML = '<option value="">Нет доступных команд</option>';
+                    teamsLoading.textContent = 'Команды не найдены';
+                }
+                
+            } catch (error) {
+                console.error('❌ Ошибка загрузки команд:', error);
+                teamSelect.innerHTML = '<option value="">Ошибка загрузки команд</option>';
+                teamsLoading.textContent = 'Ошибка загрузки команд. Пожалуйста, обновите страницу.';
+            }
+        }
+
+        // Загружаем команды при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadTeams);
+
+        // Обработка отправки формы
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            
+            if (password !== confirm) {
+                showAlert('Пароли не совпадают', 'error');
+                return;
+            }
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            delete data.confirm_password;
+            
+            console.log('📝 Отправка данных регистрации:', data);
+            
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('📥 Ответ сервера:', result);
+                
+                if (response.ok) {
+                    showAlert('Регистрация успешна! Перенаправление...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showAlert(result.error || 'Ошибка при регистрации', 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Ошибка:', error);
+                showAlert('Ошибка соединения с сервером', 'error');
+            }
+        });
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            // Автоматически скрываем через 5 секунд
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+/* Универсальные стили для модальных окон */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 30px auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px; /* Уменьшили максимальную ширину */
+    position: relative;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover {
+    color: #333;
+}
+
+/* Компактные формы */
+.modal .form-group {
+    margin-bottom: 12px;
+}
+
+.modal .form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.modal .form-group input,
+.modal .form-group select,
+.modal .form-group textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    transition: border-color 0.3s;
+}
+
+.modal .form-group textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+/* Компактный поиск */
+.modal .search-container {
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.modal .search-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.modal .search-tab {
+    padding: 5px 12px;
+    font-size: 0.9rem;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.modal .search-tab.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.modal .search-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.modal .search-box input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Компактный список пользователей */
+.modal .users-list {
+    max-height: 250px; /* Уменьшили высоту */
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: white;
+}
+
+.modal .user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.modal .user-item:last-child {
+    border-bottom: none;
+}
+
+.modal .user-item:hover {
+    background: #f8f9fa;
+}
+
+.modal .user-info {
+    flex: 1;
+}
+
+.modal .user-name {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.modal .user-meta {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.modal .user-team {
+    display: inline-block;
+    padding: 1px 6px;
+    background: #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+.modal .user-rating {
+    color: #48bb78;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+.modal .add-button {
+    padding: 3px 10px;
+    font-size: 0.85rem;
+    background: #48bb78;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.modal .add-button:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+}
+
+/* Компактный список выбранных */
+.modal .selected-users {
+    margin-top: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.modal .selected-users h4 {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+}
+
+.modal .selected-user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    margin-bottom: 4px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.modal .role-select {
+    margin-left: 8px;
+    padding: 2px 4px;
+    font-size: 0.85rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+}
+
+.modal .remove-button {
+    padding: 2px 8px;
+    background: #f56565;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+/* Компактная пагинация */
+.modal .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.modal .pagination button {
+    padding: 3px 8px;
+    font-size: 0.85rem;
+    border: 1px solid #e0e0e0;
+    background: white;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.modal .pagination button.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.modal .pagination button:disabled {
+    background: #f0f0f0;
+    cursor: not-allowed;
+}
+
+/* Кнопка отправки */
+.modal .btn-primary {
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    font-size: 1rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 15px;
+        width: auto;
+    }
+}
