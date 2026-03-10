@@ -5,155 +5,320 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Активист - Панель управления</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/logo.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <style>
+        /* Дополнительные стили для контента */
+        .content-wrapper {
+            padding: 20px;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #bf5254;
+        }
+        
+        .rating-detail {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .rating-detail-item {
+            text-align: center;
+        }
+        
+        .rating-detail-item .label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .rating-detail-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .value.events { color: #48bb78; }
+        .value.achievements { color: #4299e1; }
+        .value.penalties { color: #f56565; }
+        
+        .search-container {
+            margin: 15px 0;
+            padding: 0 15px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #bf5254;
+            box-shadow: 0 0 5px rgba(191, 82, 84, 0.3);
+        }
+        
+        .section-title {
+            margin: 30px 0 20px 0;
+            color: #333;
+            font-size: 1.5rem;
+            border-left: 4px solid #bf5254;
+            padding-left: 15px;
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <a href="/dashboard" class="logo">АктивистРейтинг</a>
-            <div class="nav-links">
-                <a href="/dashboard" class="active">Главная</a>
-                <a href="#" id="logoutBtn">Выход</a>
+    <div class="app-container">
+        <!-- Боковая панель -->
+        <div class="sidebar" id="sidebar">
+            <!-- Логотип -->
+            <div class="sidebar-logo">
+                <a href="/dashboard" class="logo-container">
+                    <img src="/images/company1w.png" alt="Компания 1" class="logo-image">
+                    <span class="logo-cross"></span>
+                    <img src="/images/company2w.png" alt="Компания 2" class="logo-image logo-text">
+                </a>
             </div>
-        </div>
-    </nav>
 
-    <div class="container">
-        <!-- Профиль -->
-        <div class="card">
-            <div class="profile-header">
-                <div class="profile-avatar" id="userInitials"></div>
-                <div class="profile-info">
-                    <h1 id="userName"></h1>
-                    <p id="userTeam"></p>
-                    <p>Мой рейтинг: <span class="rating-badge" id="userRating">0</span></p>
+            <!-- Профиль пользователя -->
+            <div class="sidebar-profile" id="sidebarProfile">
+                <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
+                <div class="sidebar-profile-info">
+                    <h4 id="sidebarUserName">Загрузка...</h4>
+                    <p id="sidebarUserRole">Активист</p>
                 </div>
             </div>
-        </div>
 
-        <!-- Детальный расчет рейтинга -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Детальный расчет рейтинга</h2>
-            </div>
-            <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="stat-box" style="text-align: center; padding: 15px; background: #f7fafc; border-radius: 8px;">
-                    <h3 style="color: #48bb78;">Мероприятия</h3>
-                    <p style="font-size: 2rem; font-weight: bold;" id="eventsPoints">0</p>
-                </div>
-                <div class="stat-box" style="text-align: center; padding: 15px; background: #f7fafc; border-radius: 8px;">
-                    <h3 style="color: #4299e1;">Достижения</h3>
-                    <p style="font-size: 2rem; font-weight: bold;" id="achievementsPoints">0</p>
-                </div>
-                <div class="stat-box" style="text-align: center; padding: 15px; background: #f7fafc; border-radius: 8px;">
-                    <h3 style="color: #f56565;">Штрафы</h3>
-                    <p style="font-size: 2rem; font-weight: bold;" id="penaltyPoints">0</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Рейтинги -->
-        <div class="grid">
-            <div class="card">
-                <div class="card-header">
-                    <h2>Локальный рейтинг (моя команда)</h2>
-                </div>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Место</th>
-                                <th>Имя</th>
-                                <th>Рейтинг</th>
-                            </tr>
-                        </thead>
-                        <tbody id="localRatingBody">
-                            <tr>
-                                <td colspan="3" style="text-align: center;">Загрузка...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h2>Общий рейтинг</h2>
-                </div>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Место</th>
-                                <th>Имя</th>
-                                <th>Команда</th>
-                                <th>Рейтинг</th>
-                            </tr>
-                        </thead>
-                        <tbody id="globalRatingBody">
-                            <tr>
-                                <td colspan="4" style="text-align: center;">Загрузка...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <!-- Навигационное меню -->
+            <ul class="sidebar-nav" id="sidebarNav">
+                <li class="sidebar-nav-item">
+                    <a href="/dashboard" class="sidebar-nav-link active">
+                        <i>🏠</i>
+                        <span>Главная</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link" onclick="showProfile(); return false;">
+                        <i>👤</i>
+                        <span>Мой профиль</span>
+                    </a>
+                </li>
+                </li>
+                <li class="sidebar-nav-item">
+    <a href="/calendar" class="sidebar-nav-link">
+        <i>📅</i>
+        <span>Календарь</span>
+    </a>
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link" onclick="logout(); return false;">
+                        <i>🚪</i>
+                        <span>Выход</span>
+                    </a>
+                </li>
+            </ul>
         </div>
 
-        <!-- История мероприятий -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Мои мероприятия</h2>
+        <!-- Верхняя панель для мобильных -->
+        <div class="top-bar">
+            <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            <div class="mobile-logo">
+                <img src="/images/company1.png" alt="Company 1" style="height: 30px;">
+                <span class="logo-cross" style="width: 20px; height: 20px;"></span>
+                <img src="/images/company2.png" alt="Company 2" style="height: 30px;">
             </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Мероприятие</th>
-                            <th>Дата</th>
-                            <th>Моя роль</th>
-                            <th>Баллы</th>
-                            <th>Статус</th>
-                        </tr>
-                    </thead>
-                    <tbody id="eventsBody">
-                        <tr>
-                            <td colspan="5" style="text-align: center;">Загрузка...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <div></div>
         </div>
 
-        <!-- Мои достижения -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Мои достижения</h2>
+        <!-- Основной контент -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Приветствие -->
+                <h1>Добро пожаловать, <span id="userName"></span>!</h1>
+                
+                <!-- Статистика -->
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <h3>Мой рейтинг</h3>
+                        <div class="stat-value" id="userRating">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Мероприятий</h3>
+                        <div class="stat-value" id="userEventsCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Достижений</h3>
+                        <div class="stat-value" id="userAchievementsCount">0</div>
+                    </div>
+                </div>
+
+                <!-- Детальный расчет рейтинга -->
+                <div class="rating-detail">
+                    <div class="rating-detail-item">
+                        <div class="label">Мероприятия</div>
+                        <div class="value events" id="eventsPoints">0</div>
+                    </div>
+                    <div class="rating-detail-item">
+                        <div class="label">Достижения</div>
+                        <div class="value achievements" id="achievementsPoints">0</div>
+                    </div>
+                    <div class="rating-detail-item">
+                        <div class="label">Штрафы</div>
+                        <div class="value penalties" id="penaltyPoints">0</div>
+                    </div>
+                </div>
+
+                <!-- Локальный рейтинг -->
+                <h2 class="section-title" id="localRating">Локальный рейтинг (моя команда)</h2>
+                <div class="card">
+                    <div class="search-container">
+                        <input type="text" id="searchLocalRating" class="search-input" placeholder="🔍 Поиск по имени..." oninput="filterLocalRating()">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Место</th>
+                                    <th>Имя</th>
+                                    <th>Рейтинг</th>
+                                </tr>
+                            </thead>
+                            <tbody id="localRatingBody">
+                                <tr>
+                                    <td colspan="3" style="text-align: center;">Загрузка...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Общий рейтинг -->
+                <h2 class="section-title" id="globalRating">Общий рейтинг</h2>
+                <div class="card">
+                    <div class="search-container">
+                        <input type="text" id="searchGlobalRating" class="search-input" placeholder="🔍 Поиск по имени, команде..." oninput="filterGlobalRating()">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Место</th>
+                                    <th>Имя</th>
+                                    <th>Команда</th>
+                                    <th>Рейтинг</th>
+                                </tr>
+                            </thead>
+                            <tbody id="globalRatingBody">
+                                <tr>
+                                    <td colspan="4" style="text-align: center;">Загрузка...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Мои мероприятия -->
+                <h2 class="section-title" id="myEvents">Мои мероприятия</h2>
+                <div class="card">
+                    <div class="search-container">
+                        <input type="text" id="searchMyEvents" class="search-input" placeholder="🔍 Поиск по названию, роли, статусу..." oninput="filterMyEvents()">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Мероприятие</th>
+                                    <th>Дата</th>
+                                    <th>Моя роль</th>
+                                    <th>Баллы</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventsBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">Загрузка...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Мои достижения -->
+                <h2 class="section-title" id="myAchievements">Мои достижения</h2>
+                <div class="card">
+                    <div class="search-container">
+                        <input type="text" id="searchMyAchievements" class="search-input" placeholder="🔍 Поиск по названию, статусу..." oninput="filterMyAchievements()">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Описание</th>
+                                    <th>Баллы</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody id="achievementsBody">
+                                <tr>
+                                    <td colspan="4" style="text-align: center;">Загрузка...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Название</th>
-                            <th>Описание</th>
-                            <th>Баллы</th>
-                            <th>Статус</th>
-                        </tr>
-                    </thead>
-                    <tbody id="achievementsBody">
-                        <tr>
-                            <td colspan="4" style="text-align: center;">Загрузка...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        </main>
     </div>
 
+    <script src="/js/sidebar.js"></script>
     <script>
-        // Глобальные переменные
+        // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
         let currentUserId = null;
+        let currentUser = null;
+        let localRatingData = [];
+        let globalRatingData = [];
+        let myEventsData = [];
+        let myAchievementsData = [];
 
-        // Загрузка данных пользователя
+        // ==================== ЗАГРУЗКА ДАННЫХ ====================
         async function loadUserData() {
             try {
                 console.log('Загрузка данных пользователя...');
@@ -165,26 +330,26 @@
                     return;
                 }
                 
-                const user = await response.json();
-                console.log('Пользователь загружен:', user);
+                currentUser = await response.json();
+                currentUserId = currentUser.id;
                 
-                currentUserId = user.id;
+                console.log('Пользователь загружен:', currentUser);
                 
                 // Заполнение профиля
-                document.getElementById('userName').textContent = user.full_name;
-                document.getElementById('userTeam').textContent = user.team_name || 'Без команды';
-                document.getElementById('userRating').textContent = user.total_rating;
+                document.getElementById('userName').textContent = currentUser.full_name;
+                document.getElementById('userRating').textContent = currentUser.total_rating;
                 
-                const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
-                document.getElementById('userInitials').textContent = initials;
+                // Обновляем сайдбар
+                updateSidebarFromUser(currentUser);
                 
                 // Загрузка всех данных
                 await Promise.all([
-                    loadLocalRating(user.team_id),
+                    loadLocalRating(currentUser.team_id),
                     loadGlobalRating(),
-                    loadUserEvents(user.id),
-                    loadUserAchievements(user.id),
-                    loadDetailedRating(user.id)
+                    loadUserEvents(currentUser.id),
+                    loadUserAchievements(currentUser.id),
+                    loadDetailedRating(currentUser.id),
+                    loadUserStats(currentUser.id)
                 ]);
                 
                 console.log('Все данные загружены');
@@ -193,8 +358,47 @@
                 console.error('Ошибка загрузки данных:', error);
             }
         }
+
+        // Обновление сайдбара
+        function updateSidebarFromUser(user) {
+            const avatar = document.getElementById('sidebarAvatar');
+            const userName = document.getElementById('sidebarUserName');
+            const userRole = document.getElementById('sidebarUserRole');
+            
+            if (avatar) {
+                const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+                avatar.textContent = initials;
+            }
+            
+            if (userName) userName.textContent = user.full_name;
+            if (userRole) userRole.textContent = 'Активист';
+        }
+
+        // Скролл к секции
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Загрузка статистики пользователя
+        async function loadUserStats(userId) {
+            try {
+                const eventsResponse = await fetch(`/activist/user-events/${userId}`);
+                const events = await eventsResponse.json();
+                document.getElementById('userEventsCount').textContent = events.length;
+                
+                const achievementsResponse = await fetch(`/activist/user-achievements/${userId}`);
+                const achievements = await achievementsResponse.json();
+                document.getElementById('userAchievementsCount').textContent = achievements.length;
+                
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
         
-        // Загрузка локального рейтинга
+        // ==================== ЛОКАЛЬНЫЙ РЕЙТИНГ ====================
         async function loadLocalRating(teamId) {
             if (!teamId) {
                 document.getElementById('localRatingBody').innerHTML = 
@@ -208,33 +412,52 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const users = await response.json();
+                localRatingData = await response.json();
+                displayLocalRating(localRatingData);
                 
-                const tbody = document.getElementById('localRatingBody');
-                tbody.innerHTML = '';
-                
-                if (users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Нет участников в команде</td></tr>';
-                    return;
-                }
-                
-                users.forEach((user, index) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${index + 1}</td>
-        <td><a href="/profile.html?id=${user.id}&role=activist" style="color: #667eea; text-decoration: none;">${user.full_name}</a></td>
-        <td><span class="rating-badge">${user.total_rating}</span></td>
-    `;
-    tbody.appendChild(row);
-});
             } catch (error) {
                 console.error('Ошибка загрузки локального рейтинга:', error);
                 document.getElementById('localRatingBody').innerHTML = 
                     '<tr><td colspan="3" style="text-align: center;">Ошибка загрузки данных</td></tr>';
             }
         }
+
+        function displayLocalRating(users) {
+            const tbody = document.getElementById('localRatingBody');
+            tbody.innerHTML = '';
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Нет участников в команде</td></tr>';
+                return;
+            }
+            
+            users.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><a href="/profile.html?id=${user.id}&role=activist" style="color: #bf5254; text-decoration: none;">${escapeHtml(user.full_name)}</a></td>
+                    <td><span class="rating-badge">${user.total_rating}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterLocalRating() {
+            const searchText = document.getElementById('searchLocalRating').value.toLowerCase().trim();
+            
+            if (!searchText) {
+                displayLocalRating(localRatingData);
+                return;
+            }
+            
+            const filtered = localRatingData.filter(user => 
+                user.full_name.toLowerCase().includes(searchText)
+            );
+            
+            displayLocalRating(filtered);
+        }
         
-        // Загрузка глобального рейтинга
+        // ==================== ГЛОБАЛЬНЫЙ РЕЙТИНГ ====================
         async function loadGlobalRating() {
             try {
                 const response = await fetch('/activist/global-rating');
@@ -242,34 +465,54 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const users = await response.json();
+                globalRatingData = await response.json();
+                displayGlobalRating(globalRatingData);
                 
-                const tbody = document.getElementById('globalRatingBody');
-                tbody.innerHTML = '';
-                
-                if (users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Нет данных</td></tr>';
-                    return;
-                }
-                
-                users.forEach((user, index) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${index + 1}</td>
-        <td><a href="/profile.html?id=${user.id}&role=activist" style="color: #667eea; text-decoration: none;">${user.full_name}</a></td>
-        <td>${user.team_name || 'Без команды'}</td>
-        <td><span class="rating-badge">${user.total_rating}</span></td>
-    `;
-    tbody.appendChild(row);
-});
             } catch (error) {
                 console.error('Ошибка загрузки глобального рейтинга:', error);
                 document.getElementById('globalRatingBody').innerHTML = 
                     '<tr><td colspan="4" style="text-align: center;">Ошибка загрузки данных</td></tr>';
             }
         }
+
+        function displayGlobalRating(users) {
+            const tbody = document.getElementById('globalRatingBody');
+            tbody.innerHTML = '';
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Нет данных</td></tr>';
+                return;
+            }
+            
+            users.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><a href="/profile.html?id=${user.id}&role=activist" style="color: #bf5254; text-decoration: none;">${escapeHtml(user.full_name)}</a></td>
+                    <td>${user.team_name ? escapeHtml(user.team_name) : 'Без команды'}</td>
+                    <td><span class="rating-badge">${user.total_rating}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterGlobalRating() {
+            const searchText = document.getElementById('searchGlobalRating').value.toLowerCase().trim();
+            
+            if (!searchText) {
+                displayGlobalRating(globalRatingData);
+                return;
+            }
+            
+            const filtered = globalRatingData.filter(user => 
+                (user.full_name && user.full_name.toLowerCase().includes(searchText)) ||
+                (user.team_name && user.team_name.toLowerCase().includes(searchText))
+            );
+            
+            displayGlobalRating(filtered);
+        }
         
-        // Загрузка мероприятий пользователя
+        // ==================== МЕРОПРИЯТИЯ ====================
         async function loadUserEvents(userId) {
             try {
                 const response = await fetch(`/activist/user-events/${userId}`);
@@ -277,38 +520,59 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const events = await response.json();
+                myEventsData = await response.json();
+                displayUserEvents(myEventsData);
                 
-                const tbody = document.getElementById('eventsBody');
-                tbody.innerHTML = '';
-                
-                if (events.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Нет мероприятий</td></tr>';
-                    return;
-                }
-                
-                events.forEach(event => {
-    const row = document.createElement('tr');
-    const statusClass = event.status === 'approved' ? 'status-approved' : 
-                      event.status === 'rejected' ? 'status-rejected' : 'status-pending';
-    
-    row.innerHTML = `
-        <td><a href="/event-view.html?id=${event.id}&role=activist" style="color: #667eea; text-decoration: none;">${event.title}</a></td>
-        <td>${new Date(event.event_date).toLocaleDateString()}</td>
-        <td>${getRoleName(event.role)}</td>
-        <td>${event.points_earned || '—'}</td>
-        <td><span class="status-badge ${statusClass}">${getStatusName(event.status)}</span></td>
-    `;
-    tbody.appendChild(row);
-});
             } catch (error) {
                 console.error('Ошибка загрузки мероприятий:', error);
                 document.getElementById('eventsBody').innerHTML = 
                     '<tr><td colspan="5" style="text-align: center;">Ошибка загрузки данных</td></tr>';
             }
         }
+
+        function displayUserEvents(events) {
+            const tbody = document.getElementById('eventsBody');
+            tbody.innerHTML = '';
+            
+            if (events.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Нет мероприятий</td></tr>';
+                return;
+            }
+            
+            events.forEach(event => {
+                const row = document.createElement('tr');
+                const statusClass = event.status === 'approved' ? 'status-approved' : 
+                                  event.status === 'rejected' ? 'status-rejected' : 'status-pending';
+                
+                row.innerHTML = `
+                    <td><a href="/event-view.html?id=${event.id}&role=activist" style="color: #bf5254; text-decoration: none;">${escapeHtml(event.title)}</a></td>
+                    <td>${new Date(event.event_date).toLocaleDateString()}</td>
+                    <td>${getRoleName(event.role)}</td>
+                    <td>${event.points_earned || '—'}</td>
+                    <td><span class="status-badge ${statusClass}">${getStatusName(event.status)}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterMyEvents() {
+            const searchText = document.getElementById('searchMyEvents').value.toLowerCase().trim();
+            
+            if (!searchText) {
+                displayUserEvents(myEventsData);
+                return;
+            }
+            
+            const filtered = myEventsData.filter(event => 
+                (event.title && event.title.toLowerCase().includes(searchText)) ||
+                (getRoleName(event.role) && getRoleName(event.role).toLowerCase().includes(searchText)) ||
+                getStatusName(event.status).toLowerCase().includes(searchText)
+            );
+            
+            displayUserEvents(filtered);
+        }
         
-        // Загрузка достижений пользователя
+        // ==================== ДОСТИЖЕНИЯ ====================
         async function loadUserAchievements(userId) {
             try {
                 const response = await fetch(`/activist/user-achievements/${userId}`);
@@ -316,34 +580,55 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const achievements = await response.json();
+                myAchievementsData = await response.json();
+                displayUserAchievements(myAchievementsData);
                 
-                const tbody = document.getElementById('achievementsBody');
-                tbody.innerHTML = '';
-                
-                if (achievements.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Нет достижений</td></tr>';
-                    return;
-                }
-                
-                achievements.forEach(ach => {
-                    const row = document.createElement('tr');
-                    const statusClass = ach.status === 'approved' ? 'status-approved' : 
-                                      ach.status === 'rejected' ? 'status-rejected' : 'status-pending';
-                    
-                    row.innerHTML = `
-                        <td>${ach.title}</td>
-                        <td>${ach.description || '—'}</td>
-                        <td>${ach.points}</td>
-                        <td><span class="status-badge ${statusClass}">${getStatusName(ach.status)}</span></td>
-                    `;
-                    tbody.appendChild(row);
-                });
             } catch (error) {
                 console.error('Ошибка загрузки достижений:', error);
                 document.getElementById('achievementsBody').innerHTML = 
                     '<tr><td colspan="4" style="text-align: center;">Ошибка загрузки данных</td></tr>';
             }
+        }
+
+        function displayUserAchievements(achievements) {
+            const tbody = document.getElementById('achievementsBody');
+            tbody.innerHTML = '';
+            
+            if (achievements.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Нет достижений</td></tr>';
+                return;
+            }
+            
+            achievements.forEach(ach => {
+                const row = document.createElement('tr');
+                const statusClass = ach.status === 'approved' ? 'status-approved' : 
+                                  ach.status === 'rejected' ? 'status-rejected' : 'status-pending';
+                
+                row.innerHTML = `
+                    <td>${escapeHtml(ach.title)}</td>
+                    <td>${ach.description ? escapeHtml(ach.description) : '—'}</td>
+                    <td>${ach.points}</td>
+                    <td><span class="status-badge ${statusClass}">${getStatusName(ach.status)}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterMyAchievements() {
+            const searchText = document.getElementById('searchMyAchievements').value.toLowerCase().trim();
+            
+            if (!searchText) {
+                displayUserAchievements(myAchievementsData);
+                return;
+            }
+            
+            const filtered = myAchievementsData.filter(ach => 
+                (ach.title && ach.title.toLowerCase().includes(searchText)) ||
+                (ach.description && ach.description.toLowerCase().includes(searchText)) ||
+                getStatusName(ach.status).toLowerCase().includes(searchText)
+            );
+            
+            displayUserAchievements(filtered);
         }
 
         // Загрузка детального рейтинга
@@ -365,7 +650,7 @@
             }
         }
         
-        // Вспомогательные функции
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
         function getRoleName(role) {
             const roles = {
                 'volunteer': 'Волонтер',
@@ -383,20 +668,29 @@
             };
             return statuses[status] || status;
         }
-        
-        // Выход
-        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            
+
+        function escapeHtml(text) {
+            if (!text) return text;
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showProfile() {
+            window.location.href = `/profile.html?id=${currentUserId}&role=activist`;
+        }
+
+        // ==================== ВЫХОД ====================
+        async function logout() {
             try {
                 await fetch('/auth/logout', { method: 'POST' });
                 window.location.href = '/login';
             } catch (error) {
                 console.error('Ошибка при выходе:', error);
             }
-        });
+        }
         
-        // Загрузка данных при загрузке страницы
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Страница загружена, начинаем загрузку данных...');
             loadUserData();

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь с FullCalendar</title>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #calendar {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Календарь с FullCalendar</h1>
+    <div class="controls">
+        <input type="text" id="eventInput" placeholder="Введите мероприятие">
+        <input type="date" id="eventDate">
+        <button onclick="addEvent()">Добавить мероприятие</button>
+    </div>
+    <div id="calendar"></div>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ru.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            let events = [];
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ru',
+                events: events,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                }
+            });
+
+            calendar.render();
+
+            window.addEventEvent = function() {
+                const eventInput = document.getElementById('eventInput');
+                const eventDate = document.getElementById('eventDate');
+
+                const eventText = eventInput.value.trim();
+                const date = eventDate.value;
+
+                if (eventText && date) {
+                    events.push({
+                        title: eventText,
+                        start: date
+                    });
+
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(events);
+
+                    eventInput.value = '';
+                }
+            };
+
+            window.addEvent = addEventEvent;
+        });
+    </script>
+</body>
+</html>

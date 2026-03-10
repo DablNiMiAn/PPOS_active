@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Исправленный календарь</title>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        h1 { color: #333; }
+        button { background: #bf5254; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #a35057; }
+        #calendar { margin-top: 20px; height: 500px; }
+        .status { padding: 10px; background: #f0f0f0; border-radius: 5px; margin: 10px 0; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; max-height: 200px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Исправленный календарь</h1>
+        
+        <button onclick="loadEvents()">🔄 Загрузить события</button>
+        <button onclick="addTestEvent()">➕ Добавить тестовое</button>
+        <button onclick="clearEvents()">🗑️ Очистить</button>
+
+        <div class="status" id="status">Нажмите кнопку</div>
+        <div id="calendar"></div>
+        <pre id="debug"></pre>
+    </div>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ru.js'></script>
+    
+    <script>
+        let calendar;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+                initialView: 'dayGridMonth',
+                locale: 'ru'
+            });
+            calendar.render();
+        });
+
+        async function loadEvents() {
+            const status = document.getElementById('status');
+            const debug = document.getElementById('debug');
+            status.innerHTML = '⏳ Загрузка...';
+            
+            try {
+                const response = await fetch('/api/calendar-fixed');
+                const events = await response.json();
+                
+                debug.innerHTML = 'Данные с сервера:\n' + JSON.stringify(events, null, 2);
+                status.innerHTML = `✅ Загружено: ${events.length}`;
+                
+                calendar.removeAllEvents();
+                if (events.length > 0) {
+                    calendar.addEventSource(events);
+                }
+                
+            } catch (error) {
+                status.innerHTML = '❌ ' + error.message;
+            }
+        }
+
+        async function addTestEvent() {
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            
+            try {
+                await fetch('/api/calendar/events', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        title: 'Тест ' + new Date().toLocaleTimeString(),
+                        event_date: dateStr,
+                        start_time: '10:00:00',
+                        end_time: '11:00:00'
+                    })
+                });
+                loadEvents();
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+            }
+        }
+
+        function clearEvents() {
+            calendar.removeAllEvents();
+            document.getElementById('debug').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

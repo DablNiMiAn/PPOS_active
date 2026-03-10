@@ -1,0 +1,317 @@
+/* ========== КАЛЕНДАРЬ МЕРОПРИЯТИЙ ========== */
+
+/* Основные цвета команд */
+:root {
+    --team-1-color: #7AC7C4;
+    --team-2-color: #4F9DA6;
+    --team-3-color: #E14B4C;
+    --team-4-color: #D93B4C;
+    --team-5-color: #B83B4C;
+    --team-public-color: #9B59B6;
+    --primary-color: #E14B4C;
+    --secondary-color: #4F9DA6;
+    --dark-color: #2C3E50;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.content-wrapper {
+    flex: 1;
+    padding: 20px;
+    margin-left: var(--sidebar-width, 280px);
+    transition: margin-left 0.3s ease;
+    height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.content-wrapper.expanded {
+    margin-left: var(--sidebar-collapsed-width, 70px);
+}
+
+.calendar-header {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.calendar-title {
+    font-size: 2rem;
+    color: var(--dark-color);
+    margin: 0 0 15px 0;
+}
+
+.calendar-controls {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.btn {
+    background: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    background: #c13b3c;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+    background: #3d7d84;
+}
+
+.filter-select {
+    padding: 8px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    background: white;
+    cursor: pointer;
+    min-width: 200px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.status {
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+    font-size: 0.95rem;
+}
+
+#calendar {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    min-height: 500px;
+    height: auto;
+}
+
+/* FullCalendar стили */
+.fc {
+    height: 100%;
+    min-height: 500px;
+}
+
+.fc .fc-toolbar {
+    flex-wrap: wrap;
+    margin-bottom: 1em !important;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.5em !important;
+    color: var(--dark-color);
+}
+
+.fc .fc-daygrid-day {
+    cursor: pointer;
+}
+
+.fc .fc-daygrid-day:hover {
+    background: #f0f0f0;
+}
+
+.fc-day-today {
+    background: #fff0f0 !important;
+}
+
+.fc-event {
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin: 1px 0 !important;
+    padding: 2px 4px !important;
+    border: none !important;
+}
+
+.fc-event:hover {
+    transform: scale(1.02);
+}
+
+.fc-button-primary {
+    background: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.fc-button-primary:hover {
+    background: #c13b3c !important;
+    border-color: #c13b3c !important;
+}
+
+.fc-button-primary:disabled {
+    background: #e0e0e0 !important;
+    border-color: #e0e0e0 !important;
+    color: #666 !important;
+}
+
+/* Цвета для разных команд */
+.fc-event.team-1 { background-color: var(--team-1-color) !important; }
+.fc-event.team-2 { background-color: var(--team-2-color) !important; }
+.fc-event.team-3 { background-color: var(--team-3-color) !important; }
+.fc-event.team-4 { background-color: var(--team-4-color) !important; }
+.fc-event.team-5 { background-color: var(--team-5-color) !important; }
+.fc-event.team-public { background-color: var(--team-public-color) !important; }
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 50px auto;
+    padding: 25px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--dark-color);
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--dark-color);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.event-details {
+    padding: 20px;
+}
+
+.event-details p {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.event-details strong {
+    color: #555;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .content-wrapper {
+        margin-left: 0;
+        padding: 10px;
+    }
+    
+    .calendar-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-select {
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}

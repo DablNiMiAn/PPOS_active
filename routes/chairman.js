@@ -162,6 +162,73 @@ async function sendNotificationToSpecialists(title, message, eventId) {
         }
     });
 
+    // ==================== ПОИСК АКТИВИСТОВ ДЛЯ ДОСТИЖЕНИЙ ====================
+let achievementSearchResults = [];
+let selectedAchievementUserId = null;
+
+function searchAchievementUsers() {
+    const searchText = document.getElementById('achievementUserSearch').value.toLowerCase();
+    
+    if (searchText.length < 2) {
+        document.getElementById('achievementUserResults').innerHTML = '<div style="padding: 10px; text-align: center; color: #666;">Введите минимум 2 символа</div>';
+        document.getElementById('achievementSearchCount').textContent = '0';
+        return;
+    }
+    
+    fetch('/specialist/all-users')
+        .then(res => res.json())
+        .then(users => {
+            // Фильтруем только активистов
+            const activists = users.filter(user => user.role === 'activist');
+            const filtered = activists.filter(user => 
+                user.full_name.toLowerCase().includes(searchText)
+            );
+            
+            document.getElementById('achievementSearchCount').textContent = filtered.length;
+            displayAchievementSearchResults(filtered.slice(0, 10));
+            achievementSearchResults = filtered;
+        });
+}
+
+function displayAchievementSearchResults(users) {
+    const container = document.getElementById('achievementUserResults');
+    
+    if (users.length === 0) {
+        container.innerHTML = '<div style="padding: 10px; text-align: center; color: #666;">Активисты не найдены</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    users.forEach(user => {
+        const div = document.createElement('div');
+        div.className = 'search-result-item';
+        div.style.cssText = 'padding: 10px; border-bottom: 1px solid #e0e0e0; cursor: pointer; display: flex; justify-content: space-between; align-items: center;';
+        div.onclick = () => selectAchievementUser(user.id, user.full_name);
+        div.innerHTML = `
+            <div>
+                <strong>${user.full_name}</strong>
+                <div style="font-size: 0.85rem; color: #666;">${user.team_name || 'Без команды'} | Рейтинг: ${user.total_rating}</div>
+            </div>
+            <span style="color: #7AC7C4;">➕</span>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function selectAchievementUser(id, name) {
+    selectedAchievementUserId = id;
+    
+    // Подсвечиваем выбранного
+    document.querySelectorAll('#achievementUserResults .search-result-item').forEach(item => {
+        item.style.background = 'white';
+    });
+    event.currentTarget.style.background = '#f0f0f0';
+    
+    // Обновляем селект
+    const select = document.getElementById('achievementUserId');
+    select.innerHTML = `<option value="${id}">${name}</option>`;
+}
+
     // Создание достижения
     router.post('/achievement', authenticateChairman, async (req, res) => {
         const { user_id, title, description, points } = req.body;

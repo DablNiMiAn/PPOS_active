@@ -5,41 +5,144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Председатель - Панель управления</title>
     <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/modal.css">
+    <link rel="stylesheet" href="/css/logo.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
     <style>
-        /* Дополнительные стили для поиска */
-        .search-container {
+        /* Дополнительные стили для контента */
+        .content-wrapper {
+            padding: 20px;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #bf5254;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .quick-action-btn {
+            background: linear-gradient(135deg, #bf5254 0%, #a35057 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(191, 82, 84, 0.4);
+        }
+        
+        .team-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
             margin-bottom: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+        }
+        
+        .team-stat-item {
+            text-align: center;
+        }
+        
+        .team-stat-item .label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .team-stat-item .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #45405f;
+        }
+        
+        .search-container {
+            margin: 15px 0;
+            padding: 0 15px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #bf5254;
+            box-shadow: 0 0 5px rgba(191, 82, 84, 0.3);
+        }
+        
+        .section-title {
+            margin: 30px 0 20px 0;
+            color: #333;
+            font-size: 1.5rem;
+            border-left: 4px solid #bf5254;
+            padding-left: 15px;
+        }
+
+        /* Стили для поиска участников */
+        .user-search-container {
+            margin: 15px 0;
             padding: 15px;
             background: #f8f9fa;
             border-radius: 8px;
         }
-        
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .search-box input {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-        
-        .search-box input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
+
         .search-tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
-        
+
         .search-tab {
             padding: 8px 16px;
             background: #e0e0e0;
@@ -47,68 +150,89 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 0.9rem;
+            transition: all 0.3s;
         }
-        
+
+        .search-tab:hover {
+            background: #d0d0d0;
+        }
+
         .search-tab.active {
-            background: #667eea;
+            background: #bf5254;
             color: white;
         }
-        
-        .users-list {
-            max-height: 400px;
+
+        .user-search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .user-search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .user-search-box input:focus {
+            outline: none;
+            border-color: #bf5254;
+        }
+
+        .user-search-results {
+            max-height: 300px;
             overflow-y: auto;
             border: 1px solid #e0e0e0;
             border-radius: 5px;
+            background: white;
+            margin-bottom: 15px;
         }
-        
-        .user-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        .user-result-item {
             padding: 10px 15px;
             border-bottom: 1px solid #e0e0e0;
             cursor: pointer;
             transition: background 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        
-        .user-item:hover {
+
+        .user-result-item:hover {
             background: #f0f0f0;
         }
-        
-        .user-item.selected {
-            background: #e3f2fd;
-            border-left: 4px solid #667eea;
+
+        .user-result-item.selected {
+            background: #fff0f0;
+            border-left: 4px solid #bf5254;
         }
-        
-        .user-info {
+
+        .user-result-info {
             flex: 1;
         }
-        
-        .user-name {
+
+        .user-result-name {
             font-weight: 500;
             margin-bottom: 3px;
         }
-        
-        .user-meta {
+
+        .user-result-meta {
             font-size: 0.85rem;
             color: #666;
         }
-        
-        .user-team {
+
+        .user-result-team {
             display: inline-block;
             padding: 2px 8px;
             background: #e0e0e0;
             border-radius: 12px;
             font-size: 0.8rem;
+            margin-right: 8px;
         }
-        
-        .user-rating {
-            font-weight: bold;
-            color: #48bb78;
-            margin-left: 10px;
-        }
-        
-        .add-button {
+
+        .add-user-btn {
             padding: 5px 15px;
             background: #48bb78;
             color: white;
@@ -117,23 +241,23 @@
             cursor: pointer;
             font-size: 0.9rem;
         }
-        
-        .add-button:hover {
+
+        .add-user-btn:hover {
             background: #38a169;
         }
-        
-        .add-button:disabled {
+
+        .add-user-btn:disabled {
             background: #cbd5e0;
             cursor: not-allowed;
         }
-        
-        .selected-users {
-            margin-top: 20px;
+
+        .selected-users-list {
+            margin-top: 15px;
             padding: 15px;
             background: #f8f9fa;
             border-radius: 8px;
         }
-        
+
         .selected-user-item {
             display: flex;
             justify-content: space-between;
@@ -144,8 +268,15 @@
             border: 1px solid #e0e0e0;
             border-radius: 5px;
         }
-        
-        .remove-button {
+
+        .selected-user-role {
+            margin: 0 10px;
+            padding: 3px;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+        }
+
+        .remove-user-btn {
             padding: 3px 10px;
             background: #f56565;
             color: white;
@@ -154,148 +285,171 @@
             cursor: pointer;
             font-size: 0.8rem;
         }
-        
-        .remove-button:hover {
+
+        .remove-user-btn:hover {
             background: #e53e3e;
-        }
-        
-        .role-select {
-            margin-left: 10px;
-            padding: 3px;
-            border: 1px solid #e0e0e0;
-            border-radius: 3px;
-        }
-        
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 15px;
-        }
-        
-        .pagination button {
-            padding: 5px 10px;
-            border: 1px solid #e0e0e0;
-            background: white;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-        
-        .pagination button.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        
-        .pagination button:disabled {
-            background: #f0f0f0;
-            cursor: not-allowed;
-        }
-        
-        .stats-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            background: #667eea;
-            color: white;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            margin-left: 5px;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <a href="/dashboard" class="logo">АктивистРейтинг</a>
-            <div class="nav-links">
-                <a href="/dashboard" class="active">Главная</a>
-                <a href="#" onclick="showCreateEventModal(); return false;">Создать мероприятие</a>
-                <a href="#" onclick="showCreateAchievementModal(); return false;">Добавить достижение</a>
-                <a href="#" id="logoutBtn">Выход</a>
+    <div class="app-container">
+        <!-- Боковая панель -->
+        <div class="sidebar" id="sidebar">
+            <!-- Логотип -->
+            <div class="sidebar-logo">
+                <a href="/dashboard" class="logo-container">
+                    <img src="/images/company1w.png" alt="Компания 1" class="logo-image">
+                    <span class="logo-cross"></span>
+                    <img src="/images/company2w.png" alt="Компания 2" class="logo-image logo-text">
+                </a>
             </div>
-        </div>
-    </nav>
 
-    <div class="container">
-        <!-- Профиль и статистика -->
-        <div class="grid">
-            <div class="card">
-                <div class="profile-header">
-                    <div class="profile-avatar" id="userInitials"></div>
-                    <div class="profile-info">
-                        <h1 id="userName"></h1>
-                        <p id="userTeam"></p>
-                        <p>Мой рейтинг: <span class="rating-badge" id="userRating">0</span></p>
+            <!-- Профиль пользователя -->
+            <div class="sidebar-profile" id="sidebarProfile">
+                <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
+                <div class="sidebar-profile-info">
+                    <h4 id="sidebarUserName">Загрузка...</h4>
+                    <p id="sidebarUserRole">Председатель</p>
+                </div>
+            </div>
+
+            <!-- Навигационное меню -->
+            <ul class="sidebar-nav" id="sidebarNav">
+                <li class="sidebar-nav-item">
+                    <a href="/dashboard" class="sidebar-nav-link active">
+                        <i>🏠</i>
+                        <span>Главная</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link" onclick="showCreateEventModal(); return false;">
+                        <i>📖</i>
+                        <span>Создать мероприятие</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link" onclick="showCreateAchievementModal(); return false;">
+                        <i>🏆</i>
+                        <span>Добавить достижение</span>
+                    </a>
+                </li>
+                                </li>
+                <li class="sidebar-nav-item">
+    <a href="/calendar" class="sidebar-nav-link">
+        <i>📅</i>
+        <span>Календарь</span>
+    </a>
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link" onclick="showProfile(); return false;">
+                        <i>👤</i>
+                        <span>Мой профиль</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link" onclick="logout(); return false;">
+                        <i>🚪</i>
+                        <span>Выход</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Верхняя панель для мобильных -->
+        <div class="top-bar">
+            <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            <div class="mobile-logo">
+                <img src="/images/company1.png" alt="Company 1" style="height: 30px;">
+                <span class="logo-cross" style="width: 20px; height: 20px;"></span>
+                <img src="/images/company2.png" alt="Company 2" style="height: 30px;">
+            </div>
+            <div></div>
+        </div>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <!-- Приветствие -->
+                <h1>Добро пожаловать, <span id="userName"></span>!</h1>
+                
+                <!-- Статистика команды -->
+                <div class="team-stats" id="teamStats">
+                    <div class="team-stat-item">
+                        <div class="label">Участников</div>
+                        <div class="value" id="totalMembers">0</div>
+                    </div>
+                    <div class="team-stat-item">
+                        <div class="label">Общий рейтинг</div>
+                        <div class="value" id="totalRating">0</div>
+                    </div>
+                    <div class="team-stat-item">
+                        <div class="label">Средний рейтинг</div>
+                        <div class="value" id="avgRating">0</div>
+                    </div>
+                </div>
+
+                <!-- Мои мероприятия -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Мои мероприятия</h2>
+                        <button class="btn btn-primary" onclick="showCreateEventModal()">+ Создать</button>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="searchMyEvents" class="search-input" placeholder="🔍 Поиск по названию, статусу, модератору..." oninput="filterMyEvents()">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Дата</th>
+                                    <th>Масштаб</th>
+                                    <th>Участников</th>
+                                    <th>Статус</th>
+                                    <th>Модератор</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myEventsBody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center;">Загрузка...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Участники команды -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Участники команды</h2>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" id="searchTeamMembers" class="search-input" placeholder="🔍 Поиск по имени, рейтингу..." oninput="filterTeamMembers()">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Имя</th>
+                                    <th>Рейтинг</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teamMembersBody">
+                                <tr>
+                                    <td colspan="3" style="text-align: center;">Загрузка...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2>Статистика команды</h2>
-                </div>
-                <div id="teamStats">
-                    <p>Участников: <span id="totalMembers">0</span></p>
-                    <p>Общий рейтинг: <span id="totalRating">0</span></p>
-                    <p>Средний рейтинг: <span id="avgRating">0</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Мои мероприятия -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Мои мероприятия</h2>
-                <button class="btn btn-primary" onclick="showCreateEventModal()">+ Создать</button>
-            </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Название</th>
-                            <th>Дата</th>
-                            <th>Масштаб</th>
-                            <th>Участников</th>
-                            <th>Статус</th>
-                            <th>Модератор</th>
-                        </tr>
-                    </thead>
-                    <tbody id="myEventsBody">
-                        <tr>
-                            <td colspan="6" style="text-align: center;">Загрузка...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Участники команды -->
-        <div class="card">
-            <div class="card-header">
-                <h2>Участники команды</h2>
-            </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Имя</th>
-                            <th>Рейтинг</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody id="teamMembersBody">
-                        <tr>
-                            <td colspan="3" style="text-align: center;">Загрузка...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        </main>
     </div>
 
     <!-- Модальное окно создания мероприятия -->
     <div id="eventModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
                 <h2>Создание мероприятия</h2>
                 <span class="close" onclick="closeEventModal()">&times;</span>
@@ -311,48 +465,47 @@
                     <textarea id="eventDescription" name="description" rows="3" required></textarea>
                 </div>
                 
-                <div class="form-group">
-                    <label for="eventDate">Дата проведения</label>
-                    <input type="date" id="eventDate" name="event_date" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="eventScale">Масштаб</label>
-                    <select id="eventScale" name="scale" required>
-                        <option value="institute">Институтское (1 балл)</option>
-                        <option value="university">Университетское (2 балла)</option>
-                        <option value="city">Городское (3 балла)</option>
-                        <option value="regional">Региональное (4 балла)</option>
-                        <option value="district">Окружное (5 баллов)</option>
-                        <option value="federal">Федеральное (6 баллов)</option>
-                    </select>
+                <div class="form-row" style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label for="eventDate">Дата проведения</label>
+                        <input type="date" id="eventDate" name="event_date" required>
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label for="eventScale">Масштаб</label>
+                        <select id="eventScale" name="scale" required>
+                            <option value="institute">Институтское (1 балл)</option>
+                            <option value="university">Университетское (2 балла)</option>
+                            <option value="city">Городское (3 балла)</option>
+                            <option value="regional">Региональное (4 балла)</option>
+                            <option value="district">Окружное (5 баллов)</option>
+                            <option value="federal">Федеральное (6 баллов)</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label>Поиск участников</label>
-                    <div class="search-container">
+                    <div class="user-search-container">
                         <div class="search-tabs">
                             <button type="button" class="search-tab active" onclick="switchSearchTab('team')">Моя команда</button>
                             <button type="button" class="search-tab" onclick="switchSearchTab('all')">Все участники</button>
                         </div>
                         
-                        <div class="search-box">
-                            <input type="text" id="userSearch" placeholder="Поиск по имени или email..." oninput="searchUsers()">
+                        <div class="user-search-box">
+                            <input type="text" id="userSearch" placeholder="Поиск по имени..." oninput="searchUsers()">
                             <span class="stats-badge" id="searchCount">0</span>
                         </div>
                         
-                        <div id="usersList" class="users-list">
-                            <!-- Список пользователей будет загружен здесь -->
-                            <div style="text-align: center; padding: 20px;">Загрузка пользователей...</div>
+                        <div id="userSearchResults" class="user-search-results">
+                            <div style="text-align: center; padding: 20px; color: #666;">Введите минимум 2 символа для поиска</div>
                         </div>
                         
-                        <div id="pagination" class="pagination">
-                            <!-- Пагинация будет здесь -->
-                        </div>
+                        <button type="button" class="btn" onclick="addSelectedUser()" id="addSelectedBtn" disabled>➕ Добавить выбранного</button>
                     </div>
                 </div>
                 
-                <div class="selected-users">
+                <div class="selected-users-list">
                     <h4>Выбранные участники (<span id="selectedCount">0</span>)</h4>
                     <div id="selectedUsersList"></div>
                 </div>
@@ -395,17 +548,20 @@
         </div>
     </div>
 
+    <script src="/js/sidebar.js"></script>
     <script>
         // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
         let teamMembers = [];
         let allUsers = [];
         let currentUserId = null;
         let currentUserTeamId = null;
-        let selectedUsers = new Map(); // Map для хранения выбранных участников с их ролями
+        let selectedUsers = new Map();
         let currentSearchTab = 'team';
-        let currentPage = 1;
-        const itemsPerPage = 20;
-        let searchQuery = '';
+        let searchResults = [];
+        let selectedUserId = null;
+
+        // Для поиска в таблицах
+        let allMyEvents = [];
 
         // ==================== ЗАГРУЗКА ДАННЫХ ====================
         async function loadChairmanData() {
@@ -422,17 +578,17 @@
                 
                 // Заполнение профиля
                 document.getElementById('userName').textContent = user.full_name;
-                document.getElementById('userTeam').textContent = user.team_name || 'Без команды';
-                document.getElementById('userRating').textContent = user.total_rating;
                 
-                const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
-                document.getElementById('userInitials').textContent = initials;
+                // Обновляем сайдбар
+                updateSidebarFromUser(user);
                 
                 // Загрузка данных
-                await loadTeamMembers();
-                await loadMyEvents();
-                await loadTeamStats();
-                await loadAllUsers(); // Загружаем всех пользователей для поиска
+                await Promise.all([
+                    loadTeamMembers(),
+                    loadMyEvents(),
+                    loadTeamStats(),
+                    loadAllUsers()
+                ]);
                 
             } catch (error) {
                 console.error('Ошибка:', error);
@@ -440,12 +596,35 @@
             }
         }
 
+        // Обновление сайдбара
+        function updateSidebarFromUser(user) {
+            const avatar = document.getElementById('sidebarAvatar');
+            const userName = document.getElementById('sidebarUserName');
+            const userRole = document.getElementById('sidebarUserRole');
+            
+            if (avatar) {
+                const initials = user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+                avatar.textContent = initials;
+            }
+            
+            if (userName) userName.textContent = user.full_name;
+            if (userRole) userRole.textContent = 'Председатель';
+        }
+
+        // Скролл к секции
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // ==================== УЧАСТНИКИ КОМАНДЫ ====================
         async function loadTeamMembers() {
             try {
                 const response = await fetch('/chairman/team-members');
                 const members = await response.json();
                 
-                // Добавляем текущего пользователя (председателя) в список, если его там нет
                 const chairmanInList = members.some(m => m.id === currentUserId);
                 
                 if (!chairmanInList && currentUserId) {
@@ -460,23 +639,8 @@
                 }
                 
                 teamMembers = members;
+                displayTeamMembers(members);
                 
-                const tbody = document.getElementById('teamMembersBody');
-                tbody.innerHTML = '';
-                
-                members.forEach(member => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td><a href="/profile.html?id=${member.id}&role=chairman" style="color: #667eea; text-decoration: none;">${member.full_name}</a></td>
-        <td><span class="rating-badge">${member.total_rating}</span></td>
-        <td>
-            <button class="btn btn-primary btn-small" onclick="quickAddParticipant(${member.id}, '${member.full_name.replace(/'/g, "\\'")}')">+ Добавить</button>
-        </td>
-    `;
-    tbody.appendChild(row);
-});
-                
-                // Заполняем селект для достижений
                 const select = document.getElementById('achievementUser');
                 if (select) {
                     select.innerHTML = '<option value="">Выберите активиста</option>';
@@ -495,173 +659,228 @@
             }
         }
 
+        function displayTeamMembers(members) {
+            const tbody = document.getElementById('teamMembersBody');
+            tbody.innerHTML = '';
+            
+            if (members.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Нет участников в команде</td></tr>';
+                return;
+            }
+            
+            members.forEach(member => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><a href="/profile.html?id=${member.id}&role=chairman" style="color: #bf5254; text-decoration: none;">${escapeHtml(member.full_name)}</a></td>
+                    <td><span class="rating-badge">${member.total_rating}</span></td>
+                    <td>
+                        <button class="btn btn-primary btn-small" onclick="quickAddParticipant(${member.id}, '${escapeHtml(member.full_name).replace(/'/g, "\\'")}')">+ Добавить</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterTeamMembers() {
+            const searchText = document.getElementById('searchTeamMembers').value.toLowerCase().trim();
+            
+            if (!searchText) {
+                displayTeamMembers(teamMembers);
+                return;
+            }
+            
+            const filtered = teamMembers.filter(member => 
+                member.full_name.toLowerCase().includes(searchText) ||
+                member.total_rating.toString().includes(searchText)
+            );
+            
+            displayTeamMembers(filtered);
+        }
+
+        // ==================== МОИ МЕРОПРИЯТИЯ ====================
+        async function loadMyEvents() {
+            try {
+                const response = await fetch('/chairman/my-events');
+                allMyEvents = await response.json();
+                displayMyEvents(allMyEvents);
+            } catch (error) {
+                console.error('Ошибка загрузки мероприятий:', error);
+            }
+        }
+
+        function displayMyEvents(events) {
+            const tbody = document.getElementById('myEventsBody');
+            tbody.innerHTML = '';
+            
+            if (events.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Нет мероприятий</td></tr>';
+                return;
+            }
+            
+            events.forEach(event => {
+                const row = document.createElement('tr');
+                const statusClass = event.status === 'approved' ? 'status-approved' : 
+                                  event.status === 'rejected' ? 'status-rejected' : 'status-pending';
+                
+                let actions = '';
+                if (event.status === 'rejected') {
+                    actions = `<a href="/chairman-event-edit.html?id=${event.id}" class="btn btn-warning btn-small">✏️ Исправить</a>`;
+                }
+                
+                row.innerHTML = `
+                    <td><a href="/event-view.html?id=${event.id}&role=chairman" style="color: #bf5254; text-decoration: none;">${escapeHtml(event.title)}</a></td>
+                    <td>${new Date(event.event_date).toLocaleDateString()}</td>
+                    <td>${getScaleName(event.scale)}</td>
+                    <td>${event.participants_count || 0}</td>
+                    <td><span class="status-badge ${statusClass}">${getStatusName(event.status)}</span></td>
+                    <td>${event.moderator_name ? escapeHtml(event.moderator_name) : '—'}</td>
+                    <td>${actions}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterMyEvents() {
+            const searchText = document.getElementById('searchMyEvents').value.toLowerCase().trim();
+            
+            if (!searchText) {
+                displayMyEvents(allMyEvents);
+                return;
+            }
+            
+            const filtered = allMyEvents.filter(event => 
+                (event.title && event.title.toLowerCase().includes(searchText)) ||
+                getStatusName(event.status).toLowerCase().includes(searchText) ||
+                (event.moderator_name && event.moderator_name.toLowerCase().includes(searchText))
+            );
+            
+            displayMyEvents(filtered);
+        }
+
+        // ==================== ВСЕ ПОЛЬЗОВАТЕЛИ ====================
         async function loadAllUsers() {
             try {
                 const response = await fetch('/chairman/all-users');
                 allUsers = await response.json();
                 console.log(`✅ Загружено ${allUsers.length} пользователей`);
-                renderUserList();
             } catch (error) {
                 console.error('Ошибка загрузки всех пользователей:', error);
             }
         }
 
-        // ==================== ПОИСК И ФИЛЬТРАЦИЯ ====================
+        // ==================== СТАТИСТИКА ====================
+        async function loadTeamStats() {
+            try {
+                const response = await fetch('/chairman/team-stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalMembers').textContent = stats.total_members || 0;
+                document.getElementById('totalRating').textContent = stats.total_rating || 0;
+                document.getElementById('avgRating').textContent = Math.round(stats.average_rating || 0);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+
+        // ==================== ФУНКЦИИ ДЛЯ ПОИСКА УЧАСТНИКОВ ====================
         function switchSearchTab(tab) {
             currentSearchTab = tab;
-            currentPage = 1;
             
-            // Обновляем активный таб
             document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
             
-            renderUserList();
+            // Очищаем поиск
+            document.getElementById('userSearch').value = '';
+            document.getElementById('userSearchResults').innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Введите минимум 2 символа для поиска</div>';
+            document.getElementById('searchCount').textContent = '0';
+            document.getElementById('addSelectedBtn').disabled = true;
+            selectedUserId = null;
         }
 
         function searchUsers() {
-            searchQuery = document.getElementById('userSearch').value.toLowerCase();
-            currentPage = 1;
-            renderUserList();
-        }
-
-        function getFilteredUsers() {
-            let users = currentSearchTab === 'team' 
-                ? teamMembers.filter(u => !u.full_name.includes('(я)'))
-                : allUsers;
+            const searchText = document.getElementById('userSearch').value.toLowerCase();
             
-            // Фильтруем по поисковому запросу
-            if (searchQuery) {
-                users = users.filter(user => 
-                    user.full_name.toLowerCase().includes(searchQuery) ||
-                    (user.email && user.email.toLowerCase().includes(searchQuery)) ||
-                    (user.username && user.username.toLowerCase().includes(searchQuery))
-                );
-            }
-            
-            return users;
-        }
-
-        function renderUserList() {
-            const usersList = document.getElementById('usersList');
-            const filteredUsers = getFilteredUsers();
-            const totalUsers = filteredUsers.length;
-            
-            document.getElementById('searchCount').textContent = totalUsers;
-            
-            // Пагинация
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, totalUsers);
-            const pageUsers = filteredUsers.slice(startIndex, endIndex);
-            
-            // Рендерим список
-            usersList.innerHTML = '';
-            
-            if (pageUsers.length === 0) {
-                usersList.innerHTML = '<div style="text-align: center; padding: 20px;">Пользователи не найдены</div>';
+            if (searchText.length < 2) {
+                document.getElementById('userSearchResults').innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Введите минимум 2 символа</div>';
+                document.getElementById('searchCount').textContent = '0';
                 return;
             }
             
-            pageUsers.forEach(user => {
-                const isSelected = selectedUsers.has(user.id);
-                const userDiv = document.createElement('div');
-                userDiv.className = `user-item ${isSelected ? 'selected' : ''}`;
-                
-                // Находим команду пользователя
-                const userTeam = allUsers.find(u => u.id === user.id)?.team_name || teamMembers.find(u => u.id === user.id)?.team_name || 'Без команды';
-                
-                userDiv.innerHTML = `
-                    <div class="user-info">
-                        <div class="user-name">${user.full_name}</div>
-                        <div class="user-meta">
-                            <span class="user-team">${userTeam}</span>
-                            <span class="user-rating">⭐ ${user.total_rating || 0}</span>
+            let usersToSearch = currentSearchTab === 'team' ? teamMembers.filter(u => !u.full_name.includes('(я)')) : allUsers;
+            
+            const filtered = usersToSearch.filter(user => 
+                user.full_name.toLowerCase().includes(searchText)
+            );
+            
+            document.getElementById('searchCount').textContent = filtered.length;
+            displaySearchResults(filtered.slice(0, 10));
+            searchResults = filtered;
+        }
+
+        function displaySearchResults(users) {
+            const container = document.getElementById('userSearchResults');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Пользователи не найдены</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            users.forEach(user => {
+                const div = document.createElement('div');
+                div.className = 'user-result-item';
+                div.onclick = () => selectUser(user.id, user.full_name, user.team_name);
+                div.innerHTML = `
+                    <div class="user-result-info">
+                        <div class="user-result-name">${escapeHtml(user.full_name)}</div>
+                        <div class="user-result-meta">
+                            <span class="user-result-team">${user.team_name || 'Без команды'}</span>
+                            <span>⭐ ${user.total_rating || 0}</span>
                         </div>
                     </div>
-                    <button class="add-button" onclick="addUserToSelection(${user.id}, '${user.full_name.replace(/'/g, "\\'")}')" 
-                            ${isSelected ? 'disabled' : ''}>
-                        ${isSelected ? 'Добавлен' : 'Добавить'}
-                    </button>
+                    <span style="color: #bf5254;">➕</span>
                 `;
-                
-                usersList.appendChild(userDiv);
+                container.appendChild(div);
             });
-            
-            renderPagination(totalUsers);
         }
 
-        function renderPagination(totalItems) {
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
-            const pagination = document.getElementById('pagination');
+        function selectUser(id, name, team) {
+            selectedUserId = id;
             
-            if (totalPages <= 1) {
-                pagination.innerHTML = '';
+            document.querySelectorAll('.user-result-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            document.getElementById('addSelectedBtn').disabled = false;
+        }
+
+        function addSelectedUser() {
+            if (!selectedUserId) return;
+            
+            if (selectedUsers.has(selectedUserId)) {
+                alert('Этот пользователь уже добавлен');
                 return;
             }
             
-            let html = '';
+            const user = searchResults.find(u => u.id === selectedUserId);
+            if (!user) return;
             
-            // Кнопка "Предыдущая"
-            html += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
-            
-            // Номера страниц
-            for (let i = 1; i <= totalPages; i++) {
-                if (
-                    i === 1 || 
-                    i === totalPages || 
-                    (i >= currentPage - 2 && i <= currentPage + 2)
-                ) {
-                    html += `<button onclick="changePage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
-                } else if (i === currentPage - 3 || i === currentPage + 3) {
-                    html += `<button disabled>...</button>`;
-                }
-            }
-            
-            // Кнопка "Следующая"
-            html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
-            
-            pagination.innerHTML = html;
-        }
-
-        function changePage(page) {
-            currentPage = page;
-            renderUserList();
-        }
-
-        // ==================== УПРАВЛЕНИЕ ВЫБРАННЫМИ УЧАСТНИКАМИ ====================
-        function addUserToSelection(userId, userName) {
-            if (selectedUsers.has(userId)) return;
-            
-            // Проверяем, не добавлен ли уже пользователь
-            if ([...selectedUsers.values()].some(u => u.id === userId)) return;
-            
-            selectedUsers.set(userId, {
-                id: userId,
-                name: userName,
-                role: 'volunteer' // роль по умолчанию
+            selectedUsers.set(selectedUserId, {
+                id: user.id,
+                name: user.full_name,
+                team: user.team_name,
+                role: 'volunteer'
             });
             
             updateSelectedUsersList();
-            renderUserList(); // Обновляем список, чтобы кнопки изменились
-        }
-
-        function quickAddParticipant(userId, userName) {
-            addUserToSelection(userId, userName);
-            showCreateEventModal();
-        }
-
-        function updateUserRole(userId, role) {
-            if (selectedUsers.has(userId)) {
-                const user = selectedUsers.get(userId);
-                user.role = role;
-                selectedUsers.set(userId, user);
-                updateSelectedUsersList();
-            }
-        }
-
-        function removeUserFromSelection(userId) {
-            selectedUsers.delete(userId);
-            updateSelectedUsersList();
-            renderUserList(); // Обновляем список, чтобы кнопки изменились
+            document.getElementById('addSelectedBtn').disabled = true;
+            selectedUserId = null;
+            
+            document.querySelectorAll('.user-result-item').forEach(item => {
+                item.classList.remove('selected');
+            });
         }
 
         function updateSelectedUsersList() {
@@ -671,7 +890,7 @@
             countSpan.textContent = selectedUsers.size;
             
             if (selectedUsers.size === 0) {
-                container.innerHTML = '<p style="color: #666;">Нет выбранных участников</p>';
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 10px;">Нет выбранных участников</p>';
                 return;
             }
             
@@ -681,35 +900,70 @@
                 const div = document.createElement('div');
                 div.className = 'selected-user-item';
                 div.innerHTML = `
-                    <div style="display: flex; align-items: center; flex: 1;">
-                        <span style="flex: 1;">${user.name}</span>
-                        <select class="role-select" onchange="updateUserRole(${userId}, this.value)">
-                            <option value="volunteer" ${user.role === 'volunteer' ? 'selected' : ''}>Волонтер (1 балл)</option>
-                            <option value="media" ${user.role === 'media' ? 'selected' : ''}>Медиа (2 балла)</option>
-                            <option value="organizer" ${user.role === 'organizer' ? 'selected' : ''}>Организатор (3 балла)</option>
-                        </select>
+                    <div style="flex: 1;">
+                        <strong>${escapeHtml(user.name)}</strong>
+                        <div style="font-size: 0.85rem; color: #666;">${user.team || 'Без команды'}</div>
                     </div>
-                    <button type="button" class="remove-button" onclick="removeUserFromSelection(${userId})">✕</button>
+                    <select class="selected-user-role" onchange="updateUserRole(${userId}, this.value)">
+                        <option value="volunteer" ${user.role === 'volunteer' ? 'selected' : ''}>Волонтер (1)</option>
+                        <option value="media" ${user.role === 'media' ? 'selected' : ''}>Медиа (2)</option>
+                        <option value="organizer" ${user.role === 'organizer' ? 'selected' : ''}>Организатор (3)</option>
+                    </select>
+                    <button type="button" class="remove-user-btn" onclick="removeUserFromSelection(${userId})">✕</button>
                 `;
                 container.appendChild(div);
             });
+        }
+
+        function updateUserRole(userId, role) {
+            if (selectedUsers.has(userId)) {
+                const user = selectedUsers.get(userId);
+                user.role = role;
+                selectedUsers.set(userId, user);
+            }
+        }
+
+        function removeUserFromSelection(userId) {
+            selectedUsers.delete(userId);
+            updateSelectedUsersList();
+        }
+
+        function quickAddParticipant(userId, userName) {
+            addUserToSelection(userId, userName);
+            showCreateEventModal();
+        }
+
+        function addUserToSelection(userId, userName) {
+            if (selectedUsers.has(userId)) return;
+            
+            selectedUsers.set(userId, {
+                id: userId,
+                name: userName,
+                role: 'volunteer'
+            });
+            
+            updateSelectedUsersList();
         }
 
         // ==================== МОДАЛЬНЫЕ ОКНА ====================
         function showCreateEventModal() {
             document.getElementById('eventModal').style.display = 'block';
             document.getElementById('eventForm').reset();
+            document.getElementById('userSearchResults').innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Введите минимум 2 символа для поиска</div>';
+            document.getElementById('selectedUsersList').innerHTML = '';
+            document.getElementById('searchCount').textContent = '0';
+            document.getElementById('addSelectedBtn').disabled = true;
             selectedUsers.clear();
-            updateSelectedUsersList();
-            currentPage = 1;
-            searchQuery = '';
-            document.getElementById('userSearch').value = '';
-            renderUserList();
+            selectedUserId = null;
+            currentSearchTab = 'team';
+            
+            // Обновляем активный таб
+            document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('.search-tab').classList.add('active');
         }
 
         function closeEventModal() {
             document.getElementById('eventModal').style.display = 'none';
-            selectedUsers.clear();
         }
 
         function showCreateAchievementModal() {
@@ -718,6 +972,14 @@
 
         function closeAchievementModal() {
             document.getElementById('achievementModal').style.display = 'none';
+        }
+
+        function showTeamMembers() {
+            document.getElementById('teamMembers').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showProfile() {
+            window.location.href = `/profile.html?id=${currentUserId}&role=chairman`;
         }
 
         // ==================== ОТПРАВКА ФОРМ ====================
@@ -730,9 +992,8 @@
             }
             
             const formData = new FormData(e.target);
-            
-            // Преобразуем выбранных участников в нужный формат
             const participants = [];
+            
             selectedUsers.forEach((user, userId) => {
                 participants.push({
                     userId: userId,
@@ -748,8 +1009,6 @@
                 participants: participants
             };
             
-            console.log('📝 Отправка данных:', data);
-            
             try {
                 const response = await fetch('/chairman/event', {
                     method: 'POST',
@@ -760,7 +1019,6 @@
                 });
                 
                 const result = await response.json();
-                console.log('📥 Ответ сервера:', result);
                 
                 if (response.ok) {
                     alert('Мероприятие успешно создано и отправлено на модерацию');
@@ -771,7 +1029,7 @@
                 }
                 
             } catch (error) {
-                console.error('❌ Ошибка:', error);
+                console.error('Ошибка:', error);
                 alert('Ошибка соединения с сервером');
             }
         });
@@ -807,61 +1065,6 @@
             }
         });
 
-        // ==================== ОСТАЛЬНЫЕ ФУНКЦИИ ====================
-        async function loadMyEvents() {
-            try {
-                const response = await fetch('/chairman/my-events');
-                const events = await response.json();
-                
-                const tbody = document.getElementById('myEventsBody');
-                tbody.innerHTML = '';
-                
-                if (events.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Нет мероприятий</td></tr>';
-                    return;
-                }
-                
-                events.forEach(event => {
-    const row = document.createElement('tr');
-    const statusClass = event.status === 'approved' ? 'status-approved' : 
-                      event.status === 'rejected' ? 'status-rejected' : 'status-pending';
-    
-    let actions = '';
-    if (event.status === 'rejected') {
-        actions = `<a href="/chairman-event-edit.html?id=${event.id}" class="btn btn-warning btn-small">✏️ Исправить</a>`;
-    }
-    
-    row.innerHTML = `
-        <td><a href="/event-view.html?id=${event.id}&role=chairman" style="color: #667eea; text-decoration: none;">${event.title}</a></td>
-        <td>${new Date(event.event_date).toLocaleDateString()}</td>
-        <td>${getScaleName(event.scale)}</td>
-        <td>${event.participants_count || 0}</td>
-        <td><span class="status-badge ${statusClass}">${getStatusName(event.status)}</span></td>
-        <td>${event.moderator_name || '—'}</td>
-        <td>${actions}</td>
-    `;
-    tbody.appendChild(row);
-});
-                
-            } catch (error) {
-                console.error('Ошибка загрузки мероприятий:', error);
-            }
-        }
-
-        async function loadTeamStats() {
-            try {
-                const response = await fetch('/chairman/team-stats');
-                const stats = await response.json();
-                
-                document.getElementById('totalMembers').textContent = stats.total_members || 0;
-                document.getElementById('totalRating').textContent = stats.total_rating || 0;
-                document.getElementById('avgRating').textContent = Math.round(stats.average_rating || 0);
-                
-            } catch (error) {
-                console.error('Ошибка загрузки статистики:', error);
-            }
-        }
-
         // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
         function getScaleName(scale) {
             const scales = {
@@ -884,6 +1087,19 @@
             return statuses[status] || status;
         }
 
+        function escapeHtml(text) {
+            if (!text) return text;
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== ВЫХОД ====================
+        async function logout() {
+            await fetch('/auth/logout', { method: 'POST' });
+            window.location.href = '/login';
+        }
+
         // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         document.addEventListener('DOMContentLoaded', loadChairmanData);
 
@@ -899,14 +1115,6 @@
                 closeAchievementModal();
             }
         };
-
-        // Выход
-        document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            await fetch('/auth/logout', { method: 'POST' });
-            window.location.href = '/login';
-        });
     </script>
-<%@ include file="../partials/event-modal.html" %>
 </body>
 </html>

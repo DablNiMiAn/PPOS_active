@@ -1,0 +1,33 @@
+<!-- Боковая панель -->
+<div class="sidebar" id="sidebar">
+    <!-- Логотип -->
+    <div class="sidebar-logo">
+        <a href="/dashboard" class="logo-container">
+            <img src="/images/company1.png" alt="Компания 1" class="logo-image">
+            <span class="logo-cross"></span>
+            <img src="/images/company2.png" alt="Компания 2" class="logo-image logo-text">
+        </a>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i>◀</i>
+        </button>
+    </div>
+
+    <!-- Профиль пользователя (будет заполняться через JS) -->
+    <div class="sidebar-profile" id="sidebarProfile">
+        <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
+        <div class="sidebar-profile-info">
+            <h4 id="sidebarUserName">Загрузка...</h4>
+            <p id="sidebarUserRole"></p>
+        </div>
+    </div>
+
+<!-- Верхняя панель для мобильных -->
+<div class="top-bar">
+    <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+    <div class="mobile-logo">
+        <img src="/images/company1.png" alt="Company 1" style="height: 30px;">
+        <span class="logo-cross" style="width: 20px; height: 20px;"></span>
+        <img src="/images/company2.png" alt="Company 2" style="height: 30px;">
+    </div>
+    <div></div>
+</div>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестовый календарь</title>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #bf5254;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #a35057;
+        }
+        #calendar {
+            margin-top: 30px;
+            height: 500px;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .test-events {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .test-event {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-left: 4px solid #bf5254;
+            cursor: pointer;
+        }
+        .test-event:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Простой тестовый календарь</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <button onclick="addTodayEvent()">📅 Добавить событие на сегодня</button>
+            <button onclick="addTomorrowEvent()">📅 Добавить событие на завтра</button>
+            <button onclick="clearEvents()">🗑️ Очистить все</button>
+        </div>
+
+        <div id="calendar"></div>
+
+        <div class="test-events" id="eventsList">
+            <h3>События в календаре:</h3>
+            <div id="events"></div>
+        </div>
+    </div>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ru.js'></script>
+    
+    <script>
+        let calendar;
+        let events = [];
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Страница загружена');
+            
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'ru',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: events,
+                eventClick: function(info) {
+                    alert(`Событие: ${info.event.title}`);
+                }
+            });
+            
+            calendar.render();
+            console.log('Календарь создан');
+            
+            // Добавляем тестовое событие сразу
+            addTodayEvent();
+        });
+
+        // Добавить событие на сегодня
+        function addTodayEvent() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            
+            const newEvent = {
+                title: 'Событие сегодня ' + new Date().toLocaleTimeString(),
+                start: `${year}-${month}-${day}T10:00:00`,
+                end: `${year}-${month}-${day}T11:30:00`,
+                color: '#bf5254'
+            };
+            
+            events.push(newEvent);
+            updateCalendar();
+        }
+
+        // Добавить событие на завтра
+        function addTomorrowEvent() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const year = tomorrow.getFullYear();
+            const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const day = String(tomorrow.getDate()).padStart(2, '0');
+            
+            const newEvent = {
+                title: 'Событие завтра',
+                start: `${year}-${month}-${day}T14:00:00`,
+                end: `${year}-${month}-${day}T15:30:00`,
+                color: '#45405f'
+            };
+            
+            events.push(newEvent);
+            updateCalendar();
+        }
+
+        // Очистить все события
+        function clearEvents() {
+            events = [];
+            updateCalendar();
+        }
+
+        // Обновить календарь и список
+        function updateCalendar() {
+            // Обновляем календарь
+            calendar.removeAllEvents();
+            if (events.length > 0) {
+                calendar.addEventSource(events);
+            }
+            
+            // Обновляем список событий
+            const eventsDiv = document.getElementById('events');
+            eventsDiv.innerHTML = '';
+            
+            if (events.length === 0) {
+                eventsDiv.innerHTML = '<p>Нет событий</p>';
+            } else {
+                events.forEach((event, index) => {
+                    const date = event.start.split('T')[0];
+                    const time = event.start.split('T')[1].substring(0,5);
+                    eventsDiv.innerHTML += `
+                        <div class="test-event" onclick="alert('${event.title}')">
+                            <strong>${event.title}</strong><br>
+                            Дата: ${date}, Время: ${time}
+                        </div>
+                    `;
+                });
+            }
+            
+            console.log('События обновлены:', events);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь мероприятий</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/logo.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/calendar.css">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Боковая панель -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <a href="/dashboard" class="logo-container">
+                    <img src="/images/company1.png" alt="Компания 1" class="logo-image">
+                    <span class="logo-cross"></span>
+                    <img src="/images/company2.png" alt="Компания 2" class="logo-image logo-text">
+                </a>
+            </div>
+
+            <div class="sidebar-profile" id="sidebarProfile">
+                <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
+                <div class="sidebar-profile-info">
+                    <h4 id="sidebarUserName">Загрузка...</h4>
+                    <p id="sidebarUserRole"></p>
+                </div>
+            </div>
+
+            <ul class="sidebar-nav" id="sidebarNav">
+                <li class="sidebar-nav-item">
+                    <a href="/dashboard" class="sidebar-nav-link">
+                        <i>🏠</i>
+                        <span>Главная</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="/calendar" class="sidebar-nav-link active">
+                        <i>📅</i>
+                        <span>Календарь</span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link" onclick="logout(); return false;">
+                        <i>🚪</i>
+                        <span>Выход</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Верхняя панель для мобильных -->
+        <div class="top-bar">
+            <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            <div class="mobile-logo">
+                <img src="/images/company1.png" alt="Company 1" style="height: 30px;">
+                <span class="logo-cross" style="width: 20px; height: 20px;"></span>
+                <img src="/images/company2.png" alt="Company 2" style="height: 30px;">
+            </div>
+            <div></div>
+        </div>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <div class="content-wrapper" id="contentWrapper">
+                <div class="calendar-header">
+                    <h1 class="calendar-title">📅 Календарь мероприятий</h1>
+                    
+                    <div class="calendar-controls">
+                        <select id="teamFilter" class="filter-select" onchange="filterEvents()">
+                            <option value="all">Все команды</option>
+                        </select>
+                        <button class="btn" onclick="loadEvents()">🔄 Обновить</button>
+                    </div>
+
+                    <div class="status" id="status">
+                        Загрузка мероприятий...
+                    </div>
+                </div>
+
+                <div id="calendar"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно создания/редактирования события -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Создание мероприятия</h2>
+                <span class="close" onclick="closeEventModal()">&times;</span>
+            </div>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label for="eventTitle">Название *</label>
+                    <input type="text" id="eventTitle" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventDescription">Описание</label>
+                    <textarea id="eventDescription" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventDate">Дата *</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="eventTime">Время *</label>
+                        <input type="time" id="eventTime" value="10:00" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventLocation">Место проведения</label>
+                    <input type="text" id="eventLocation">
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventTeam">Команда</label>
+                    <select id="eventTeam">
+                        <option value="">Выберите команду</option>
+                    </select>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEventModal()">Отмена</button>
+                <button class="btn" onclick="saveEvent()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно просмотра деталей события -->
+    <div id="eventDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Детали мероприятия</h2>
+                <span class="close" onclick="closeDetailsModal()">&times;</span>
+            </div>
+            <div id="eventDetails" class="event-details"></div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeDetailsModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/sidebar.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ru.js'></script>
+    <script src="/js/calendar.js"></script>
+</body>
+</html>

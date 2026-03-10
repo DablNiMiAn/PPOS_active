@@ -1,0 +1,335 @@
+/* ========== ЛОГОТИП С АНИМИРОВАННЫМ КРЕСТИКОМ ========== */
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}
+
+.logo-container:hover {
+    opacity: 0.9;
+}
+
+/* Изображения компаний */
+.logo-image {
+    height: 45px;
+    width: auto;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.logo-image:hover {
+    transform: scale(1.08) rotate(2deg);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* Первая картинка */
+.logo-image:first-child:hover {
+    transform: scale(1.08) rotate(-2deg);
+}
+
+/* Крестик */
+.logo-cross {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+}
+
+/* Линии крестика */
+.logo-cross::before,
+.logo-cross::after {
+    content: '';
+    position: absolute;
+    width: 28px;
+    height: 4px;
+    background: linear-gradient(135deg, #bf5254 0%, #555555 50%, #a35057 100%);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Одна линия под 45 градусов */
+.logo-cross::before {
+    transform: rotate(45deg);
+}
+
+/* Вторая линия под -45 градусов */
+.logo-cross::after {
+    transform: rotate(-45deg);
+}
+
+/* Анимация при наведении на весь контейнер */
+.logo-container:hover .logo-cross::before {
+    transform: rotate(225deg);
+}
+
+.logo-container:hover .logo-cross::after {
+    transform: rotate(135deg);
+}
+
+/* Анимация при наведении только на крестик */
+.logo-cross:hover::before {
+    transform: rotate(405deg) scale(1.1);
+    /*background: linear-gradient(135deg, #45405f 0%, #bf5254 100%);*/
+}
+
+.logo-cross:hover::after {
+    transform: rotate(315deg) scale(1.1);
+    /*background: linear-gradient(135deg, #45405f 0%, #bf5254 100%);*/
+}
+
+/* Вариант с разными цветами линий */
+.logo-container.variant-colors .logo-cross::before {
+    background: #bf5254;
+}
+
+.logo-container.variant-colors .logo-cross::after {
+    background: #45405f;
+}
+
+/* Вариант с тонкими линиями */
+.logo-container.variant-thin .logo-cross::before,
+.logo-container.variant-thin .logo-cross::after {
+    width: 24px;
+    height: 2px;
+}
+
+/* Вариант с толстыми линиями */
+.logo-container.variant-thick .logo-cross::before,
+.logo-container.variant-thick .logo-cross::after {
+    width: 32px;
+    height: 6px;
+    border-radius: 6px;
+}
+
+/* Анимация пульсации при загрузке страницы */
+@keyframes crossPulse {
+    0% {
+        transform: rotate(45deg) scale(1);
+    }
+    50% {
+        transform: rotate(45deg) scale(1.2);
+    }
+    100% {
+        transform: rotate(45deg) scale(1);
+    }
+}
+
+@keyframes crossPulseAfter {
+    0% {
+        transform: rotate(-45deg) scale(1);
+    }
+    50% {
+        transform: rotate(-45deg) scale(1.2);
+    }
+    100% {
+        transform: rotate(-45deg) scale(1);
+    }
+}
+
+.logo-container.pulse-on-load .logo-cross::before {
+    animation: crossPulse 0.8s ease-in-out 1;
+}
+
+.logo-container.pulse-on-load .logo-cross::after {
+    animation: crossPulseAfter 0.8s ease-in-out 1;
+}
+
+/* Для мобильной версии */
+@media (max-width: 768px) {
+    .logo-container {
+        gap: 8px;
+    }
+    
+    .logo-image {
+        height: 32px;
+    }
+    
+    .logo-cross {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .logo-cross::before,
+    .logo-cross::after {
+        width: 20px;
+        height: 3px;
+    }
+}
+
+/* Для планшетов */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .logo-image {
+        height: 38px;
+    }
+}
+
+/* Темная тема (если будет нужна) */
+@media (prefers-color-scheme: dark) {
+    .logo-cross::before,
+    .logo-cross::after {
+        background: linear-gradient(135deg, #d96c6e 0%, #5e5980 100%);
+        box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Анимация для печати (для принтера) */
+@media print {
+    .logo-cross {
+        display: none;
+    }
+    
+    .logo-image {
+        filter: grayscale(100%);
+    }
+}
+
+/* ========== НАВИГАЦИЯ С ЛОГОТИПОМ ========== */
+
+.navbar {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 0.8rem 0;
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Левая часть с логотипом */
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 30px; /* Отступ между логотипом и меню */
+}
+
+/* Логотип */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+    margin-right: 20px; /* Дополнительный отступ справа */
+}
+
+.logo-container:hover {
+    opacity: 0.9;
+}
+
+/* Изображения компаний */
+.logo-image {
+    height: 45px;
+    width: auto;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Навигационное меню */
+.nav-links {
+    display: flex;
+    gap: 25px; /* Отступы между пунктами меню */
+    align-items: center;
+}
+
+.nav-links a {
+    color: #333;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    position: relative;
+}
+
+.nav-links a:hover {
+    background: #f0f0f0;
+    color: #bf5254;
+}
+
+.nav-links a.active {
+    background: #bf5254;
+    color: white;
+}
+
+/* Эффект подчеркивания при наведении */
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: #bf5254;
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+    width: 70%;
+}
+
+.nav-links a.active::after {
+    display: none;
+}
+
+/* Кнопка выхода */
+#logoutBtn {
+    background: #f56565;
+    color: white !important;
+    margin-left: 10px;
+}
+
+#logoutBtn:hover {
+    background: #e53e3e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(229, 62, 62, 0.3);
+}
+
+#logoutBtn::after {
+    display: none;
+}
+
+/* Для мобильной версии */
+@media (max-width: 768px) {
+    .navbar .container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .navbar-left {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+    }
+    
+    .logo-container {
+        margin-right: 0;
+        justify-content: center;
+    }
+    
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .logo-image {
+        height: 35px;
+    }
+    
+    #logoutBtn {
+        margin-left: 0;
+    }
+}

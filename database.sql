@@ -1,16 +1,28 @@
--- Создание базы данных
-CREATE DATABASE IF NOT EXISTS activist_rating;
+-- =====================================================
+-- БАЗА ДАННЫХ: activist_rating
+-- Система рейтинга активистов
+-- =====================================================
+
+-- Создание базы данных (если не существует)
+CREATE DATABASE IF NOT EXISTS activist_rating 
+CHARACTER SET utf8mb4 
+COLLATE utf8mb4_unicode_ci;
+
 USE activist_rating;
 
--- Таблица команд
-CREATE TABLE teams (
+-- =====================================================
+-- ТАБЛИЦА: teams (Команды)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS teams (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Таблица пользователей
-CREATE TABLE users (
+-- =====================================================
+-- ТАБЛИЦА: users (Пользователи)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -19,13 +31,18 @@ CREATE TABLE users (
     role ENUM('activist', 'chairman', 'specialist') DEFAULT 'activist',
     team_id INT,
     total_rating INT DEFAULT 0,
+    location VARCHAR(50) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL
-);
+    FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL,
+    INDEX idx_users_role (role),
+    INDEX idx_users_team (team_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Таблица мероприятий
-CREATE TABLE events (
+-- =====================================================
+-- ТАБЛИЦА: events (Мероприятия)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS events (
     id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(200) NOT NULL,
     description TEXT,
@@ -37,12 +54,17 @@ CREATE TABLE events (
     moderated_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     moderated_at TIMESTAMP NULL,
+    rejection_reason TEXT NULL,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (moderated_by) REFERENCES users(id) ON DELETE SET NULL
-);
+    FOREIGN KEY (moderated_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_events_status (status),
+    INDEX idx_events_date (event_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Таблица участия в мероприятиях
-CREATE TABLE event_participations (
+-- =====================================================
+-- ТАБЛИЦА: event_participations (Участие в мероприятиях)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS event_participations (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     event_id INT NOT NULL,
@@ -50,28 +72,38 @@ CREATE TABLE event_participations (
     role_value INT NOT NULL,
     points_earned INT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-);
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_event (user_id, event_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Таблица достижений
-CREATE TABLE achievements (
+-- =====================================================
+-- ТАБЛИЦА: achievements (Достижения)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS achievements (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     title VARCHAR(200) NOT NULL,
     description TEXT,
     points INT NOT NULL,
+    evidence_path VARCHAR(500) NULL,
+    viewed BOOLEAN DEFAULT FALSE,
     status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
     created_by INT,
     moderated_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     moderated_at TIMESTAMP NULL,
+    rejection_reason TEXT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (moderated_by) REFERENCES users(id) ON DELETE SET NULL
-);
+    FOREIGN KEY (moderated_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_achievements_status (status),
+    INDEX idx_achievements_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Таблица штрафов
-CREATE TABLE penalties (
+-- =====================================================
+-- ТАБЛИЦА: penalties (Штрафы)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS penalties (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     issued_by INT NOT NULL,
@@ -80,48 +112,66 @@ CREATE TABLE penalties (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (issued_by) REFERENCES users(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Вставка тестовых команд
-INSERT INTO teams (name) VALUES 
-('Волонтеры'),
-('Медиагруппа'),
-('Организаторы');
+-- =====================================================
+-- ТАБЛИЦА: notifications (Уведомления)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    message TEXT,
+    type ENUM('approved', 'rejected', 'info') DEFAULT 'info',
+    related_id INT,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_notifications_user (user_id, is_read, created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Вставка тестового специалиста (пароль: admin123)
-INSERT INTO users (username, email, password_hash, full_name, role) VALUES 
-('admin', 'admin@example.com', '$2a$10$YourHashedPasswordHere', 'Главный специалист', 'specialist');
+-- =====================================================
+-- ТАБЛИЦА: calendar_events (События календаря)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS calendar_events (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    event_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    location VARCHAR(255),
+    team_id INT,
+    created_by INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_calendar_events_date (event_date),
+    INDEX idx_calendar_events_team (team_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Создание индексов для оптимизации
-CREATE INDEX idx_users_role ON users(role);
-CREATE INDEX idx_users_team ON users(team_id);
-CREATE INDEX idx_events_status ON events(status);
-CREATE INDEX idx_achievements_status ON achievements(status);
--- Добавление индексов для оптимизации
-CREATE INDEX idx_events_status_created ON events(status, created_at);
-CREATE INDEX idx_achievements_status_created ON achievements(status, created_at);
-CREATE INDEX idx_users_role_team ON users(role, team_id);
+-- =====================================================
+-- ТАБЛИЦА: calendar_event_teams (Связь событий с командами)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS calendar_event_teams (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    event_id INT NOT NULL,
+    team_id INT NOT NULL,
+    FOREIGN KEY (event_id) REFERENCES calendar_events(id) ON DELETE CASCADE,
+    FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_event_team (event_id, team_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Триггер для автоматического обновления рейтинга при изменении участия в мероприятии
-DELIMITER //
-CREATE TRIGGER update_rating_on_participation
-AFTER UPDATE ON events
-FOR EACH ROW
-BEGIN
-    IF NEW.status = 'approved' AND OLD.status != 'approved' THEN
-        -- Обновление рейтинга будет происходить через процедуру recalculateUserRating
-        -- Это сигнал для приложения пересчитать рейтинги
-        INSERT INTO rating_update_queue (event_id) VALUES (NEW.id);
-    END IF;
-END//
-DELIMITER ;
-
--- Таблица для очереди обновления рейтингов
-CREATE TABLE rating_update_queue (
+-- =====================================================
+-- ТАБЛИЦА: rating_update_queue (Очередь обновления рейтингов)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS rating_update_queue (
     id INT PRIMARY KEY AUTO_INCREMENT,
     event_id INT,
     achievement_id INT,
     user_id INT,
     processed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_rating_queue_processed (processed)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

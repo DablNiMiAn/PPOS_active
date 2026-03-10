@@ -5,30 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Детали мероприятия</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/logo.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
     <style>
         .event-detail-container {
             max-width: 1000px;
             margin: 20px auto;
+            padding: 0 20px;
         }
         
         .event-header {
-    background: linear-gradient(135deg, #bf5254 0%, #45405f 100%);
-    color: white;
-    padding: 30px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
-
-.profile-header {
-    background: linear-gradient(135deg, #bf5254 0%, #45405f 100%);
-    color: white;
-    padding: 40px;
-    border-radius: 15px;
-    margin-bottom: 30px;
-    display: flex;
-    align-items: center;
-    gap: 30px;
-}
+            background: linear-gradient(135deg, #bf5254 0%, #45405f 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
         
         .event-header h1 {
             margin: 0 0 10px 0;
@@ -117,7 +109,7 @@
         
         .btn-approve {
             background: #48bb78;
-    color: white;
+            color: white;
             padding: 12px 30px;
             border: none;
             border-radius: 5px;
@@ -146,8 +138,8 @@
         }
         
         .btn-back {
-            background: #45405f;
-    color: white;
+            background: #718096;
+            color: white;
             padding: 12px 30px;
             border: none;
             border-radius: 5px;
@@ -159,7 +151,7 @@
         }
         
         .btn-back:hover {
-            background: #2d2a40;
+            background: #4a5568;
         }
         
         .rejection-form {
@@ -249,12 +241,35 @@
             background: #f56565;
             color: white;
         }
+
+        /* Кнопка возврата */
+        .back-button {
+            margin-bottom: 20px;
+        }
+        
+        .back-button a {
+            color: #bf5254;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1rem;
+        }
+        
+        .back-button a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <!-- Подключаем навигационную панель -->
     <nav class="navbar">
         <div class="container">
-            <a href="/dashboard" class="logo">АктивистРейтинг</a>
+            <a href="/dashboard" class="logo-container pulse-on-load">
+                <img src="/images/company1.png" alt="Компания 1" class="logo-image">
+                <span class="logo-cross"></span>
+                <img src="/images/company2.png" alt="Компания 2" class="logo-image">
+            </a>
             <div class="nav-links">
                 <a href="/dashboard">Главная</a>
                 <a href="#" id="logoutBtn">Выход</a>
@@ -262,11 +277,12 @@
         </div>
     </nav>
 
-    <div style="margin-bottom: 20px;">
-    <button onclick="goBack()" class="btn-back" style="background: #718096; color: white; padding: 8px 20px; border: none; border-radius: 5px; cursor: pointer;">← Вернуться</button>
-</div>
-
     <div class="event-detail-container">
+        <!-- Кнопка возврата -->
+        <div class="back-button">
+            <a href="javascript:history.back()">← Вернуться</a>
+        </div>
+
         <div id="loading" class="loading">Загрузка данных мероприятия...</div>
         
         <div id="eventContent" style="display: none;">
@@ -312,10 +328,15 @@
             </div>
 
             <!-- Кнопки действий (только для специалиста и только для pending) -->
-            <div id="actionButtons" class="action-buttons">
+            <div id="actionButtons" class="action-buttons" style="display: none;">
                 <button class="btn-approve" onclick="approveEvent()">✓ Принять мероприятие</button>
                 <button class="btn-reject" onclick="showRejectionForm()">✗ Отклонить</button>
-                <a href="/dashboard" class="btn-back">← Назад к модерации</a>
+                <a href="/dashboard" class="btn-back">← Назад</a>
+            </div>
+
+            <!-- Кнопка назад для остальных -->
+            <div id="backButtonOnly" class="action-buttons" style="display: none;">
+                <a href="/dashboard" class="btn-back">← Назад</a>
             </div>
 
             <!-- Форма отказа (изначально скрыта) -->
@@ -338,7 +359,6 @@
 
         let eventData = null;
         let participants = [];
-        let selectedUsers = new Map();
 
         // Загрузка данных мероприятия
         async function loadEventDetails() {
@@ -396,7 +416,7 @@
                 const roleClass = `role-badge role-${p.role}`;
                 
                 row.innerHTML = `
-                    <td>${p.full_name}</td>
+                    <td><a href="/profile.html?id=${p.user_id}&role=${userRole}" style="color: #bf5254; text-decoration: none;">${p.full_name}</a></td>
                     <td>${p.team_name || 'Без команды'}</td>
                     <td><span class="${roleClass}">${getRoleName(p.role)}</span></td>
                     <td>${p.points_earned} (масштаб ${eventData.scale_value} + роль ${p.role_value})</td>
@@ -406,65 +426,70 @@
 
             // Если мероприятие уже модерировалось
             if (eventData.status !== 'pending') {
-    document.getElementById('moderationInfo').style.display = 'block';
-    document.getElementById('moderatorName').textContent = eventData.moderator_name || 'Неизвестно';
-    document.getElementById('moderationDate').textContent = eventData.moderated_at ? new Date(eventData.moderated_at).toLocaleString('ru-RU') : 'Неизвестно';
-    
-    // Отображаем причину отказа, если есть
-    if (eventData.rejection_reason) {
-        document.getElementById('rejectionReason').innerHTML = `
-            <div style="background: #fff0f0; padding: 15px; border-radius: 8px; margin-top: 10px;">
-                <strong style="color: #c53030;">Причина отказа:</strong>
-                <p style="margin: 10px 0 0 0; white-space: pre-wrap;">${eventData.rejection_reason}</p>
-            </div>
-        `;
-    }
-}
+                document.getElementById('moderationInfo').style.display = 'block';
+                document.getElementById('moderatorName').textContent = eventData.moderator_name || 'Неизвестно';
+                document.getElementById('moderationDate').textContent = eventData.moderated_at ? new Date(eventData.moderated_at).toLocaleString('ru-RU') : 'Неизвестно';
+                
+                // Отображаем причину отказа, если есть
+                if (eventData.rejection_reason) {
+                    document.getElementById('rejectionReason').innerHTML = `
+                        <div style="background: #fff0f0; padding: 15px; border-radius: 8px; margin-top: 10px;">
+                            <strong style="color: #c53030;">Причина отказа:</strong>
+                            <p style="margin: 10px 0 0 0; white-space: pre-wrap;">${eventData.rejection_reason}</p>
+                        </div>
+                    `;
+                }
+            }
 
-            // Показываем кнопки только для специалиста и только для pending мероприятий
+            // Показываем правильные кнопки в зависимости от роли и статуса
+            const actionButtons = document.getElementById('actionButtons');
+            const backButtonOnly = document.getElementById('backButtonOnly');
+
             if (userRole === 'specialist' && eventData.status === 'pending') {
-                document.getElementById('actionButtons').style.display = 'flex';
+                actionButtons.style.display = 'flex';
+                backButtonOnly.style.display = 'none';
             } else {
-                document.getElementById('actionButtons').style.display = 'none';
+                actionButtons.style.display = 'none';
+                backButtonOnly.style.display = 'flex';
             }
         }
 
         // Принять мероприятие
         async function approveEvent() {
-    if (!confirm('Вы уверены, что хотите принять это мероприятие?')) return;
-    
-    try {
-        const response = await fetch(`/specialist/moderate-event/${eventId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                status: 'approved',
-                reason: '' 
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            showNotification('Мероприятие принято! Баллы начислены участникам.', 'success');
+            if (!confirm('Вы уверены, что хотите принять это мероприятие?')) return;
             
-            // Отправляем уведомления
-            await sendNotifications('approved', '');
-            
-            setTimeout(() => {
-                window.location.href = '/dashboard';  // ИСПРАВЛЕНО
-            }, 2000);
-        } else {
-            showNotification(result.error || 'Ошибка при модерации', 'error');
+            try {
+                const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        status: 'approved',
+                        reason: '' 
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Мероприятие принято! Баллы начислены участникам.', 'success');
+                    
+                    // Отправляем уведомления
+                    await sendNotifications('approved', '');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    showNotification(result.error || 'Ошибка при модерации', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка соединения с сервером', 'error');
+            }
         }
-        
-    } catch (error) {
-        console.error('Ошибка:', error);
-        showNotification('Ошибка соединения с сервером', 'error');
-    }
-}
 
         // Показать форму отказа
         function showRejectionForm() {
@@ -480,46 +505,45 @@
 
         // Отклонить мероприятие с причиной
         async function rejectEvent() {
-    const reason = document.getElementById('rejectionReasonInput').value.trim();
-    
-    if (!reason) {
-        alert('Укажите причину отказа');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/specialist/moderate-event/${eventId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                status: 'rejected',
-                reason: reason 
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            showNotification('Мероприятие отклонено. Уведомления отправлены.', 'success');
+            const reason = document.getElementById('rejectionReasonInput').value.trim();
             
-            // Отправляем уведомления с причиной
-            await sendNotifications('rejected', reason);
+            if (!reason) {
+                alert('Укажите причину отказа');
+                return;
+            }
             
-            // Перенаправляем на дашборд (не на /specialist!)
-            setTimeout(() => {
-                window.location.href = '/dashboard';  // ИСПРАВЛЕНО
-            }, 2000);
-        } else {
-            showNotification(result.error || 'Ошибка при модерации', 'error');
+            try {
+                const response = await fetch(`/specialist/moderate-event/${eventId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        status: 'rejected',
+                        reason: reason 
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Мероприятие отклонено. Уведомления отправлены.', 'success');
+                    
+                    // Отправляем уведомления с причиной
+                    await sendNotifications('rejected', reason);
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    showNotification(result.error || 'Ошибка при модерации', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка соединения с сервером', 'error');
+            }
         }
-        
-    } catch (error) {
-        console.error('Ошибка:', error);
-        showNotification('Ошибка соединения с сервером', 'error');
-    }
-}
 
         // Отправка уведомлений
         async function sendNotifications(status, reason) {
@@ -564,10 +588,6 @@
             return statuses[status] || status;
         }
 
-        function goBack() {
-    window.history.back();
-}
-        
         function getScaleName(scale) {
             const scales = {
                 'institute': 'Институтское',
