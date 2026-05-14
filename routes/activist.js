@@ -132,7 +132,73 @@ router.get('/user-rating-details/:userId', authenticateToken, async (req, res) =
     }
 });
 
-
+router.post('/achievement', authenticateToken, async (req, res) => {
+    console.log('📝 Создание достижения активистом');
+    console.log('Тело запроса:', req.body);
+    
+    const { title, description, points } = req.body;
+    
+    // Валидация
+    if (!title || !description || !points) {
+        return res.status(400).json({ error: 'Все поля обязательны для заполнения' });
+    }
+    
+    if (points < 1) {
+        return res.status(400).json({ error: 'Баллы должны быть больше 0' });
+    }
+    
+    if (title.length < 3) {
+        return res.status(400).json({ error: 'Название должно содержать минимум 3 символа' });
+    }
+    
+    if (description.length < 10) {
+        return res.status(400).json({ error: 'Описание должно содержать минимум 10 символов' });
+    }
+    
+    try {
+        const db = app.get('db');
+        
+        // Создаем достижение со статусом pending
+        const [result] = await db.execute(
+            `INSERT INTO achievements (user_id, title, description, points, status, created_by) 
+             VALUES (?, ?, ?, ?, 'pending', ?)`,
+            [req.user.userId, title, description, points, req.user.userId]
+        );
+        
+        console.log('✅ Достижение создано, ID:', result.insertId);
+        
+        // Получаем информацию о пользователе для уведомления
+        const [user] = await db.execute(
+            'SELECT full_name FROM users WHERE id = ?',
+            [req.user.userId]
+        );
+        
+        // Отправляем уведомление специалистам
+        const [specialists] = await db.execute(
+            'SELECT id FROM users WHERE role = "specialist"'
+        );
+        
+        for (const specialist of specialists) {
+            await db.execute(
+    `INSERT INTO notifications (user_id, title, message, type, related_id, created_at) 
+     VALUES (?, ?, ?, 'info', ?, NOW())`,
+    [specialist.id, 'Новое достижение на модерации', 
+     `Пользователь "${user[0].full_name}" добавил достижение "${title}" на ${points} баллов`, 
+     result.insertId]
+);
+        }
+        
+        res.status(201).json({ 
+            message: 'Достижение отправлено на модерацию', 
+            achievementId: result.insertId 
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка при создании достижения:', error);
+        res.status(500).json({ error: 'Ошибка сервера: ' + error.message });
+    }
+});
 
     return router;
 };
+

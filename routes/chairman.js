@@ -250,6 +250,144 @@ function selectAchievementUser(id, name) {
             res.status(500).json({ error: 'Ошибка при создании достижения' });
         }
     });
+// Повторная отправка достижения на модерацию
+router.put('/achievement/:achievementId/resubmit', authenticateChairman, async (req, res) => {
+    console.log('📝 Получен запрос на повторную модерацию достижения ID:', req.params.achievementId);
+    console.log('Тело запроса:', req.body);
+    
+    const { title, description, points } = req.body;
+    
+    // Валидация
+    if (!title || !description || !points) {
+        console.log('❌ Отсутствуют обязательные поля');
+        return res.status(400).json({ error: 'Все поля обязательны для заполнения' });
+    }
+    
+    const connection = await db.getConnection();
+    
+    try {
+        await connection.beginTransaction();
+
+        // Проверяем, что достижение существует
+        const [achievement] = await connection.execute(
+            `SELECT a.*, u.team_id 
+             FROM achievements a
+             JOIN users u ON a.user_id = u.id
+             WHERE a.id = ?`,
+            [req.params.achievementId]
+        );
+
+        if (achievement.length === 0) {
+            await connection.rollback();
+            console.log('❌ Достижение не найдено');
+            return res.status(404).json({ error: 'Достижение не найдено' });
+        }
+
+        console.log('✅ Достижение найдено, текущий статус:', achievement[0].status);
+
+        // Получаем команду председателя
+        const [chairman] = await connection.execute(
+            'SELECT team_id FROM users WHERE id = ?',
+            [req.user.userId]
+        );
+
+        // Проверяем, что достижение принадлежит команде председателя
+        if (achievement[0].team_id !== chairman[0].team_id) {
+            await connection.rollback();
+            console.log('❌ Нет прав на редактирование этого достижения');
+            return res.status(403).json({ error: 'Нет прав на редактирование этого достижения' });
+        }
+
+        // Обновляем достижение
+        await connection.execute(
+            `UPDATE achievements 
+             SET title = ?, description = ?, points = ?, 
+                 status = 'pending', moderated_by = NULL, moderated_at = NULL, rejection_reason = NULL
+             WHERE id = ?`,
+            [title, description, points, req.params.achievementId]
+        );
+
+        console.log('✅ Достижение обновлено, статус сброшен на pending');
+
+        await connection.commit();
+
+        // Отправляем уведомление специалистам (если функция существует)
+        try {
+            if (typeof sendNotificationToSpecialists === 'function') {
+                await sendNotificationToSpecialists(
+                    `Достижение "${title}" отправлено на повторную модерацию`,
+                    `Председатель исправил замечания и отправил достижение на повторную проверку.`,
+                    req.params.achievementId,
+                    'achievement'
+                );
+            }
+        } catch (notifyError) {
+            console.error('Ошибка при отправке уведомлений:', notifyError);
+            // Не прерываем основной процесс из-за ошибки уведомлений
+        }
+
+        res.json({ 
+            success: true,
+            message: 'Достижение обновлено и отправлено на повторную модерацию',
+            achievementId: req.params.achievementId
+        });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error('❌ Ошибка при обновлении достижения:', error);
+        res.status(500).json({ error: 'Ошибка при обновлении достижения: ' + error.message });
+    } finally {
+        connection.release();
+    }
+});
+
+router.get('/pending-achievements', authenticateChairman, async (req, res) => {
+    console.log('📋 Запрос непринятых достижений для председателя ID:', req.user.userId);
+    
+    try {
+        const db = app.get('db');
+        
+        // Получаем команду председателя
+        const [chairman] = await db.execute(
+            'SELECT team_id FROM users WHERE id = ?',
+            [req.user.userId]
+        );
+
+        console.log('Данные председателя:', chairman);
+
+        if (!chairman[0] || !chairman[0].team_id) {
+            console.log('⚠️ Председатель не привязан к команде');
+            return res.json([]);
+        }
+
+        console.log('✅ Команда председателя ID:', chairman[0].team_id);
+
+        // Получаем достижения участников команды
+        const [achievements] = await db.execute(
+            `SELECT a.*, 
+                    u.full_name as user_name,
+                    u.team_id,
+                    t.name as team_name,
+                    creator.full_name as creator_name
+             FROM achievements a
+             JOIN users u ON a.user_id = u.id
+             JOIN users creator ON a.created_by = creator.id
+             LEFT JOIN teams t ON u.team_id = t.id
+             WHERE u.team_id = ? AND a.status IN ('pending', 'rejected')
+             ORDER BY a.created_at DESC`,
+            [chairman[0].team_id]
+        );
+
+        console.log(`✅ Загружено ${achievements.length} непринятых достижений`);
+        console.log('Первое достижение:', achievements[0]);
+        
+        res.json(achievements);
+        
+    } catch (error) {
+        console.error('❌ Ошибка при получении достижений:', error);
+        res.status(500).json({ error: 'Ошибка при получении достижений: ' + error.message });
+    }
+});
 
 // Повторная отправка мероприятия на модерацию
 router.put('/event/:eventId/resubmit', authenticateChairman, async (req, res) => {
@@ -404,23 +542,26 @@ router.get('/event/:eventId', authenticateChairman, async (req, res) => {
 
     // Получение всех пользователей для поиска
     router.get('/all-users', authenticateChairman, async (req, res) => {
-        try {
-            const [users] = await db.execute(
-                `SELECT u.id, u.full_name, u.username, u.email, u.role, u.total_rating, 
-                        t.name as team_name
-                 FROM users u
-                 LEFT JOIN teams t ON u.team_id = t.id
-                 WHERE u.role IN ('activist', 'chairman')
-                 ORDER BY u.full_name ASC`
-            );
-            
-            res.json(users);
+    try {
+        const db = app.get('db');
+        
+        const [users] = await db.execute(
+            `SELECT u.id, u.full_name, u.username, u.vk_id, u.role, u.total_rating, 
+                    t.name as team_name
+             FROM users u
+             LEFT JOIN teams t ON u.team_id = t.id
+             WHERE u.role IN ('activist', 'chairman')
+             ORDER BY u.full_name ASC`
+        );
+        
+        console.log(`✅ Загружено ${users.length} пользователей для поиска`);
+        res.json(users);
 
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
-        }
-    });
+    } catch (error) {
+        console.error('❌ Ошибка при получении пользователей:', error);
+        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
+    }
+});
 
     // Получение мероприятий председателя
     router.get('/my-events', authenticateChairman, async (req, res) => {
