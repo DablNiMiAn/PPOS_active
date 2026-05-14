@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Активист - Панель управления</title>
+    <link rel="icon" type="image/x-icon" href="/images/logo.ico">
+    <link rel="shortcut icon" href="/images/logo.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/logo-small.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/logo-small.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/logo-small.png">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/logo.css">
     <link rel="stylesheet" href="/css/sidebar.css">
@@ -103,6 +108,22 @@
             border-left: 4px solid #bf5254;
             padding-left: 15px;
         }
+
+        .sidebar-profile-link {
+    display: block; /* Делает ссылку блочным элементом */
+    text-decoration: none; /* Убирает подчёркивание */
+    color: inherit; /* Наследует цвет текста */
+    width: 100%; /* Занимает всю ширину */
+}
+
+.sidebar-profile-link {
+    transition: transform 0.2s ease;
+}
+
+.sidebar-profile-link:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
@@ -113,43 +134,55 @@
             <div class="sidebar-logo">
                 <a href="/dashboard" class="logo-container">
                     <img src="/images/company1w.png" alt="Компания 1" class="logo-image">
-                    <span class="logo-cross"></span>
+                    <span class="logo-cross logo-cross-colored"></span>
                     <img src="/images/company2w.png" alt="Компания 2" class="logo-image logo-text">
                 </a>
             </div>
 
             <!-- Профиль пользователя -->
-            <div class="sidebar-profile" id="sidebarProfile">
-                <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
-                <div class="sidebar-profile-info">
-                    <h4 id="sidebarUserName">Загрузка...</h4>
-                    <p id="sidebarUserRole">Активист</p>
-                </div>
-            </div>
+<a href="#" class="sidebar-profile-link" onclick="showProfile(); return false;">
+    <div class="sidebar-profile" id="sidebarProfile">
+        <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
+        <div class="sidebar-profile-info">
+            <h4 id="sidebarUserName">Загрузка...</h4>
+            <p id="sidebarUserRole">Активист</p>
+        </div>
+    </div>
+</a>
 
             <!-- Навигационное меню -->
             <ul class="sidebar-nav" id="sidebarNav">
                 <li class="sidebar-nav-item">
                     <a href="/dashboard" class="sidebar-nav-link active">
-                        <i>🏠</i>
+                        <img src="/images/User Interface/home.svg" class="sidebar-icon">
                         <span>Главная</span>
                     </a>
                 </li>
+
                 <li class="sidebar-nav-item">
-                    <a href="#" class="sidebar-nav-link" onclick="showProfile(); return false;">
-                        <i>👤</i>
-                        <span>Мой профиль</span>
+    <a href="#" class="sidebar-nav-link" onclick="showAddAchievementModal(); return false;">
+        <img src="/images/User Interface/reward.svg" class="sidebar-icon">
+        <span>Добавить достижение</span>
+    </a>
+</li>
+
+</li>
+                                <li class="sidebar-nav-item">
+                    <a href="/shop" class="sidebar-nav-link"> <!-- showCreateTeamModal -->
+                        <img src="/images/User Interface/shop.svg" class="sidebar-icon">
+                        <span>Магазин</span>
                     </a>
                 </li>
+                
                 </li>
                 <li class="sidebar-nav-item">
     <a href="/calendar" class="sidebar-nav-link">
-        <i>📅</i>
+        <img src="/images/User Interface/calendar.svg" class="sidebar-icon">
         <span>Календарь</span>
     </a>
                 <li class="sidebar-nav-item">
                     <a href="#" class="sidebar-nav-link" onclick="logout(); return false;">
-                        <i>🚪</i>
+                        <img src="/images/User Interface/Backspace.svg" class="sidebar-icon">
                         <span>Выход</span>
                     </a>
                 </li>
@@ -170,9 +203,6 @@
         <!-- Основной контент -->
         <main class="main-content">
             <div class="content-wrapper">
-                <!-- Приветствие -->
-                <h1>Добро пожаловать, <span id="userName"></span>!</h1>
-                
                 <!-- Статистика -->
                 <div class="stat-grid">
                     <div class="stat-card">
@@ -305,10 +335,177 @@
                     </div>
                 </div>
             </div>
+
+           <!-- Модальное окно создания достижения -->
+<div id="achievementModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h2>Добавление достижения</h2>
+            <span class="close" onclick="closeAchievementModal()">&times;</span>
+        </div>
+        
+        <div style="display: flex; gap: 20px;">
+            <!-- Форма добавления достижения -->
+            <div style="flex: 1;">
+                <form id="achievementForm">
+                    <div class="form-group">
+                        <label for="achievementTitle">Название достижения</label>
+                        <input type="text" id="achievementTitle" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="achievementDescription">Описание</label>
+                        <textarea id="achievementDescription" name="description" rows="2" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="achievementPoints">Баллы</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="achievementPoints" name="points" min="1" required style="flex: 1;">
+                            <button type="button" class="btn btn-hint" onclick="toggleHintPanel()">
+                                <img src="/images/User Interface/hint.svg" class="sidebar-icon"> Подсказка
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box" style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                        <p style="margin: 0; font-size: 0.8rem; color: #1976d2;">
+                            📌 Достижение будет отправлено на модерацию
+                        </p>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Отправить</button>
+                </form>
+            </div>
+            
+            <!-- Выезжающая панель подсказок -->
+            <div id="hintPanel" style="width: 0; overflow: hidden; transition: width 0.4s ease; background: #f8f9fa; border-radius: 10px;">
+                <div style="width: 260px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="margin: 0; color: #333; font-size: 1rem;">Таблица баллов</h3>
+                        <button type="button" class="btn-close-hint" onclick="toggleHintPanel()" style="background: none; border: none; font-size: 1.1rem; cursor: pointer;">✕</button>
+                    </div>
+                    <div style="max-height: 450px; overflow-y: auto; font-size: 0.8rem;">
+                        <!-- Спикер -->
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #e8f0fe; padding: 5px; border-radius: 4px; font-weight: bold;">Спикер</div>
+                            <table style="width: 100%; margin-top: 3px;">
+                                <tr><td style="padding: 2px;">университет, город</td><td style="color: #48bb78; font-weight: bold;">170</td></tr>
+                                <tr><td style="padding: 2px;">регион, округ</td><td style="color: #48bb78; font-weight: bold;">230</td></tr>
+                            </table>
+                        </div>
+                        
+                        <!-- Ты лидер -->
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #e8f0fe; padding: 5px; border-radius: 4px; font-weight: bold;">Ты лидер</div>
+                            <table style="width: 100%; margin-top: 3px;">
+                                <tr><td style="padding: 2px;">участие (университет)</td><td style="color: #48bb78; font-weight: bold;">80</td></tr>
+                                <tr><td style="padding: 2px;">участие (регион)</td><td style="color: #48bb78; font-weight: bold;">110</td></tr>
+                                <tr><td style="padding: 2px;">участие (округ)</td><td style="color: #48bb78; font-weight: bold;">200</td></tr>
+                                <tr><td style="padding: 2px;">участие (Всеросс)</td><td style="color: #48bb78; font-weight: bold;">380</td></tr>
+                                <tr><td style="padding: 2px;">победа (университет)</td><td style="color: #48bb78; font-weight: bold;">160</td></tr>
+                                <tr><td style="padding: 2px;">победа (регион)</td><td style="color: #48bb78; font-weight: bold;">220</td></tr>
+                                <tr><td style="padding: 2px;">победа (округ)</td><td style="color: #48bb78; font-weight: bold;">360</td></tr>
+                                <tr><td style="padding: 2px;">победа (Всеросс)</td><td style="color: #48bb78; font-weight: bold;">420</td></tr>
+                            </table>
+                        </div>
+                        
+                        <!-- Студенческий лидер -->
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #e8f0fe; padding: 5px; border-radius: 4px; font-weight: bold;">Студенческий лидер</div>
+                            <table style="width: 100%; margin-top: 3px;">
+                                <tr><td style="padding: 2px;">участие (регион)</td><td style="color: #48bb78; font-weight: bold;">110</td></tr>
+                                <tr><td style="padding: 2px;">участие (округ)</td><td style="color: #48bb78; font-weight: bold;">200</td></tr>
+                                <tr><td style="padding: 2px;">участие (Всеросс)</td><td style="color: #48bb78; font-weight: bold;">380</td></tr>
+                                <tr><td style="padding: 2px;">победа (регион)</td><td style="color: #48bb78; font-weight: bold;">220</td></tr>
+                                <tr><td style="padding: 2px;">победа (округ)</td><td style="color: #48bb78; font-weight: bold;">360</td></tr>
+                                <tr><td style="padding: 2px;">победа (Всеросс)</td><td style="color: #48bb78; font-weight: bold;">420</td></tr>
+                            </table>
+                        </div>
+                        
+                        <!-- Рейтинг -->
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #e8f0fe; padding: 5px; border-radius: 4px; font-weight: bold;">Рейтинг на мероприятии</div>
+                            <table style="width: 100%; margin-top: 3px;">
+                                <tr><td style="padding: 2px;">топ-3</td><td style="color: #48bb78; font-weight: bold;">110</td></tr>
+                                <tr><td style="padding: 2px;">топ-10</td><td style="color: #48bb78; font-weight: bold;">80</td></tr>
+                            </table>
+                        </div>
+                        
+                        <!-- U-лидер -->
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #e8f0fe; padding: 5px; border-radius: 4px; font-weight: bold;">U-лидер</div>
+                            <table style="width: 100%; margin-top: 3px;">
+                                <tr><td style="padding: 2px;">участие</td><td style="color: #48bb78; font-weight: bold;">60</td></tr>
+                                <tr><td style="padding: 2px;">победа/топ-3</td><td style="color: #48bb78; font-weight: bold;">110</td></tr>
+                            </table>
+                        </div>
+                        
+                        <!-- Соцсети -->
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #e8f0fe; padding: 5px; border-radius: 4px; font-weight: bold;">Позиционирование в соцсетях</div>
+                            <table style="width: 100%; margin-top: 3px;">
+                                <tr><td style="padding: 2px;">пост в ВК (3 за семестр)</td><td style="color: #48bb78; font-weight: bold;">30</td></tr>
+                                <tr><td style="padding: 2px;">история ВК</td><td style="color: #48bb78; font-weight: bold;">10</td></tr>
+                            </table>
+                        </div>
+                        
+                        <!-- Должности -->
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #e8f0fe; padding: 5px; border-radius: 4px; font-weight: bold;">Должности</div>
+                            <table style="width: 100%; margin-top: 3px;">
+                                <tr><td style="padding: 2px;">Председатель ПОС</td><td style="color: #48bb78; font-weight: bold;">500</td></tr>
+                                <tr><td style="padding: 2px;">Руководитель комиссии</td><td style="color: #48bb78; font-weight: bold;">500</td></tr>
+                                <tr><td style="padding: 2px;">Профорг</td><td style="color: #48bb78; font-weight: bold;">200</td></tr>
+                            </table>
+                        </div>
+                        
+                        <!-- Посты в сообществе -->
+                        <div style="margin-bottom: 10px;">
+                            <div style="background: #e8f0fe; padding: 5px; border-radius: 4px; font-weight: bold;">Посты в сообществе</div>
+                            <table style="width: 100%; margin-top: 3px;">
+                                <tr><td style="padding: 2px;">2-4</td><td style="color: #48bb78; font-weight: bold;">90</td></tr>
+                                <tr><td style="padding: 2px;">5-7</td><td style="color: #48bb78; font-weight: bold;">105</td></tr>
+                                <tr><td style="padding: 2px;">8-13</td><td style="color: #48bb78; font-weight: bold;">120</td></tr>
+                                <tr><td style="padding: 2px;">14-19</td><td style="color: #48bb78; font-weight: bold;">135</td></tr>
+                                <tr><td style="padding: 2px;">20-25</td><td style="color: #48bb78; font-weight: bold;">150</td></tr>
+                                <tr><td style="padding: 2px;">26-30</td><td style="color: #48bb78; font-weight: bold;">165</td></tr>
+                                <tr><td style="padding: 2px;">31-35</td><td style="color: #48bb78; font-weight: bold;">180</td></tr>
+                                <tr><td style="padding: 2px;">36+</td><td style="color: #48bb78; font-weight: bold;">195</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
         </main>
+
     </div>
 
-    <script src="/js/sidebar.js"></script>
+<!-- Модальное окно подтверждения выхода -->
+<div id="logoutModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <div class="modal-header">
+            <h2>Подтверждение выхода</h2>
+            <span class="close" onclick="closeLogoutModal()">&times;</span>
+        </div>
+        <div style="padding: 20px;">
+            <p style="font-size: 1.1rem; margin-bottom: 20px;">
+                Вы уверены, что хотите выйти из системы?
+            </p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn btn-secondary" onclick="closeLogoutModal()" style="padding: 10px 20px;">
+                    Отмена
+                </button>
+                <button class="btn btn-primary" onclick="confirmLogout()" style="padding: 10px 20px; background: #f56565;">
+                    Выйти
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
     <script>
         // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
         let currentUserId = null;
@@ -336,7 +533,6 @@
                 console.log('Пользователь загружен:', currentUser);
                 
                 // Заполнение профиля
-                document.getElementById('userName').textContent = currentUser.full_name;
                 document.getElementById('userRating').textContent = currentUser.total_rating;
                 
                 // Обновляем сайдбар
@@ -358,6 +554,45 @@
                 console.error('Ошибка загрузки данных:', error);
             }
         }
+
+        // Автоматическое открытие модального окна по параметру URL
+function openModalFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const modal = urlParams.get('modal');
+    
+    if (modal) {
+        // Очищаем URL от параметра, чтобы при обновлении страницы окно не открывалось снова
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Открываем соответствующее модальное окно
+        switch(modal) {
+            case 'event':
+                setTimeout(() => showCreateEventModal(), 100);
+                break;
+            case 'achievement':
+                setTimeout(() => showCreateAchievementModal(), 100);
+                break;
+            case 'team':
+                setTimeout(() => showCreateTeamModal(), 100);
+                break;
+            case 'user':
+                setTimeout(() => showCreateUserModal(), 100);
+                break;
+            case 'penalty':
+                setTimeout(() => showPenaltyModal(), 100);
+                break;
+            default:
+                console.log('Неизвестное модальное окно:', modal);
+        }
+    }
+}
+
+// Вызываем функцию после загрузки страницы
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', openModalFromUrl);
+} else {
+    openModalFromUrl();
+}
 
         // Обновление сайдбара
         function updateSidebarFromUser(user) {
@@ -398,6 +633,194 @@
             }
         }
         
+        // ==================== ФУНКЦИИ ДЛЯ ДОСТИЖЕНИЙ ====================
+let achievementSearchResults = [];
+let achievementSelectedUser = null;
+
+function searchAchievementUsers() {
+    const searchText = document.getElementById('achievementUserSearch').value.toLowerCase();
+    const resultsContainer = document.getElementById('achievementUserResults');
+    const countSpan = document.getElementById('achievementSearchCount');
+    
+    if (searchText.length < 2) {
+        resultsContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Введите минимум 2 символа для поиска</div>';
+        countSpan.textContent = '0';
+        return;
+    }
+    
+    // Для активиста показываем только себя
+    const filtered = [{...currentUser}];
+    
+    countSpan.textContent = filtered.length;
+    displayAchievementSearchResults(filtered);
+    achievementSearchResults = filtered;
+}
+
+function displayAchievementSearchResults(users) {
+    const container = document.getElementById('achievementUserResults');
+    
+    if (users.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Пользователи не найдены</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    users.forEach(user => {
+        const div = document.createElement('div');
+        div.className = 'user-result-item';
+        div.onclick = () => selectAchievementUser(user);
+        div.innerHTML = `
+            <div>
+                <strong>${escapeHtml(user.full_name)} (я)</strong>
+                <div style="font-size: 0.85rem; color: #666;">${user.team_name || 'Без команды'} | Рейтинг: ${user.total_rating}</div>
+            </div>
+            <span style="color: #bf5254;">➕</span>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function selectAchievementUser(user) {
+    achievementSelectedUser = {
+        id: user.id,
+        name: user.full_name,
+        team: user.team_name
+    };
+    
+    document.querySelectorAll('#achievementUserResults .user-result-item').forEach(item => {
+        item.style.background = 'white';
+    });
+    event.currentTarget.style.background = '#f0f0f0';
+    
+    updateAchievementSelectedUsersList();
+}
+
+function updateAchievementSelectedUsersList() {
+    const container = document.getElementById('achievementSelectedUsersList');
+    const countSpan = document.getElementById('achievementSelectedCount');
+    
+    if (!achievementSelectedUser) {
+        countSpan.textContent = '0';
+        container.innerHTML = '<p style="color: #666; text-align: center; padding: 10px;">Участник не выбран</p>';
+        return;
+    }
+    
+    countSpan.textContent = '1';
+    container.innerHTML = '';
+    
+    const div = document.createElement('div');
+    div.className = 'selected-user-item';
+    div.innerHTML = `
+        <div style="flex: 1;">
+            <strong>${escapeHtml(achievementSelectedUser.name)} (я)</strong>
+            <div style="font-size: 0.85rem; color: #666;">${achievementSelectedUser.team || 'Без команды'}</div>
+        </div>
+        <button type="button" onclick="clearAchievementSelectedUser()" style="background: #f56565; color: white; border: none; border-radius: 3px; padding: 3px 8px; cursor: pointer;">✕</button>
+    `;
+    container.appendChild(div);
+}
+
+function clearAchievementSelectedUser() {
+    achievementSelectedUser = null;
+    updateAchievementSelectedUsersList();
+}
+
+function showAddAchievementModal() {
+    document.getElementById('achievementModal').style.display = 'block';
+    document.getElementById('achievementForm').reset();
+}
+
+function closeAchievementModal() {
+    document.getElementById('achievementModal').style.display = 'none';
+}
+
+function toggleHintPanel() {
+    const panel = document.getElementById('hintPanel');
+    const body = document.querySelector('.modal-content > div');
+
+    
+
+    panel.classList.toggle('open');
+    body.classList.toggle('shift');
+    if (panel.style.width === '0px' || panel.style.width === '') {
+        panel.style.width = '300px';
+    } else {
+        panel.style.width = '0px';
+    }
+
+const style = document.createElement('style');
+style.textContent = `
+    .btn-hint {
+        background: #4299e1;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .btn-hint:hover {
+        background: #3182ce;
+        transform: translateY(-2px);
+    }
+    .btn-close-hint {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #999;
+        transition: color 0.3s;
+    }
+    .btn-close-hint:hover {
+        color: #333;
+    }
+`;
+document.head.appendChild(style);
+}
+
+// Обработка отправки формы
+document.getElementById('achievementForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        title: formData.get('title'),
+        description: formData.get('description'),
+        points: parseInt(formData.get('points'))
+    };
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Отправка...';
+    
+    try {
+        const response = await fetch('/activist/achievement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert('✅ Достижение отправлено на модерацию!');
+            closeAchievementModal();
+            await loadUserAchievements(currentUserId);
+            await loadUserStats(currentUserId);
+        } else {
+            alert('❌ ' + (result.error || 'Ошибка при добавлении достижения'));
+        }
+    } catch (error) {
+        console.error('❌ Ошибка:', error);
+        alert('❌ Ошибка соединения с сервером');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+});
+
+
         // ==================== ЛОКАЛЬНЫЙ РЕЙТИНГ ====================
         async function loadLocalRating(teamId) {
             if (!teamId) {
@@ -681,14 +1104,31 @@
         }
 
         // ==================== ВЫХОД ====================
-        async function logout() {
-            try {
-                await fetch('/auth/logout', { method: 'POST' });
-                window.location.href = '/login';
-            } catch (error) {
-                console.error('Ошибка при выходе:', error);
-            }
-        }
+        // Функция открытия модального окна выхода
+function showLogoutConfirm() {
+    document.getElementById('logoutModal').style.display = 'block';
+}
+
+// Функция закрытия модального окна выхода
+function closeLogoutModal() {
+    document.getElementById('logoutModal').style.display = 'none';
+}
+
+// Функция подтверждения выхода
+async function confirmLogout() {
+    try {
+        await fetch('/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    } catch (error) {
+        console.error('Ошибка при выходе:', error);
+        alert('Произошла ошибка при выходе');
+    }
+}
+
+// Старая функция logout теперь вызывает модальное окно
+async function logout() {
+    showLogoutConfirm();
+}
         
         // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         document.addEventListener('DOMContentLoaded', function() {
