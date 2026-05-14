@@ -4,17 +4,21 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const fileUpload = require('express-fileupload');
+// const fileUpload = require('express-fileupload');
 const path = require('path');
+const { initVKBot } = require('./utils/vk-bot');
 require('dotenv').config();
 
 const app = express();
+initVKBot();
+
+
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(fileUpload());
+//app.use(fileUpload());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Сессии
@@ -24,6 +28,13 @@ app.use(session({
     saveUninitialized: false,
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }
 }));
+
+app.use((req, res, next) => {
+    const userAgent = req.headers['user-agent'] || '';
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    req.isMobile = isMobile;
+    next();
+});
 
 // Подключение к БД
 const pool = mysql.createPool({
@@ -177,102 +188,6 @@ app.get('/api/calendar-fixed', authenticateToken, async (req, res) => {
         
     } catch (error) {
         console.error('❌ Ошибка:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Страница исправленного календаря
-app.get('/fixed-calendar', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'fixed-calendar.html'));
-});
-
-app.get('/api/calendar-fixed', authenticateToken, async (req, res) => {
-    try {
-        const db = app.get('db');
-        
-        // Получаем события
-        const [events] = await db.execute(`
-            SELECT 
-                id,
-                title,
-                event_date,
-                start_time,
-                end_time
-            FROM calendar_events 
-            WHERE event_date IS NOT NULL
-            ORDER BY event_date DESC
-        `);
-        
-        console.log('Сырые события:', events);
-        
-        // Создаем массив для календаря
-        const calendarEvents = [];
-        
-        for (const event of events) {
-            // Получаем дату
-            let dateStr = event.event_date;
-            
-            // Если дата пришла как объект Date или в другом формате, преобразуем
-            if (dateStr && typeof dateStr === 'object') {
-                const d = new Date(dateStr);
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                dateStr = `${year}-${month}-${day}`;
-            } else if (dateStr && typeof dateStr === 'string') {
-                // Если строка, проверяем формат
-                if (dateStr.includes(' ')) {
-                    // Если это "Wed Mar 10 1926", преобразуем
-                    const d = new Date(dateStr);
-                    if (!isNaN(d.getTime())) {
-                        const year = d.getFullYear();
-                        const month = String(d.getMonth() + 1).padStart(2, '0');
-                        const day = String(d.getDate()).padStart(2, '0');
-                        dateStr = `${year}-${month}-${day}`;
-                    }
-                }
-            }
-            
-            // Время начала
-            let startTime = '10:00';
-            if (event.start_time) {
-                if (typeof event.start_time === 'string') {
-                    startTime = event.start_time.substring(0,5);
-                } else {
-                    startTime = '10:00';
-                }
-            }
-            
-            // Время окончания (на час позже)
-            let endTime = '11:00';
-            if (event.end_time) {
-                if (typeof event.end_time === 'string') {
-                    endTime = event.end_time.substring(0,5);
-                } else {
-                    // Если нет, добавляем час к startTime
-                    const hour = parseInt(startTime.split(':')[0]) + 1;
-                    endTime = `${hour.toString().padStart(2,'0')}:${startTime.split(':')[1] || '00'}`;
-                }
-            } else {
-                const hour = parseInt(startTime.split(':')[0]) + 1;
-                endTime = `${hour.toString().padStart(2,'0')}:${startTime.split(':')[1] || '00'}`;
-            }
-            
-            calendarEvents.push({
-                id: event.id,
-                title: event.title || 'Без названия',
-                start: `${dateStr}T${startTime}:00`,
-                end: `${dateStr}T${endTime}:00`,
-                backgroundColor: '#bf5254',
-                borderColor: '#bf5254'
-            });
-        }
-        
-        console.log('Отправляем события:', calendarEvents);
-        res.json(calendarEvents);
-        
-    } catch (error) {
-        console.error('Ошибка:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -457,6 +372,41 @@ app.get('/api/user/:userId', async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
+});
+
+app.put('/api/user/:userId/location', async (req, res) => {
+    // Используйте req.params.userId, а не req.params.id
+    const userId = req.params.userId;
+    const { location } = req.body;
+
+    // Проверяем, что userId и location переданы
+    if (!userId || !location) {
+        return res.status(400).json({ error: 'Отсутствует ID пользователя или местоположение' });
+    }
+
+    try {
+        const db = app.get('db');
+
+        // Выполняем запрос на обновление
+        const [result] = await db.query(
+            'UPDATE users SET location = ? WHERE id = ?',
+            [location, userId]
+        );
+
+        // Проверяем, что запись была обновлена
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Ошибка при обновлении местоположения:', err);
+        res.status(500).json({ error: 'Ошибка сохранения' });
+    }
+});
+
+app.get('/shop-mobile', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'mobile', 'shop-mobile.html'));
 });
 
 // Получение мероприятий пользователя
@@ -814,6 +764,8 @@ app.put('/api/calendar/events/:id', authenticateToken, async (req, res) => {
     }
 });
 
+
+
 // Удаление события
 app.delete('/api/calendar/events/:id', authenticateToken, async (req, res) => {
     const connection = await app.get('db').getConnection();
@@ -875,13 +827,14 @@ const authRoutes = require('./routes/auth')(app);
 const activistRoutes = require('./routes/activist')(app);
 const chairmanRoutes = require('./routes/chairman')(app);
 const specialistRoutes = require('./routes/specialist')(app);
+const shopRoutes = require('./routes/shop')(app);
 
 // Использование роутов
 app.use('/auth', authRoutes);
 app.use('/activist', activistRoutes);
 app.use('/chairman', chairmanRoutes);
 app.use('/specialist', specialistRoutes);
-
+app.use('/api/shop', shopRoutes); 
 // ============================================
 // СТРАНИЦЫ HTML
 // ============================================
@@ -902,8 +855,26 @@ app.get('/register', (req, res) => {
 });
 
 // Страница календаря
-app.get('/calendar', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'calendar.html'));
+app.get('/calendar', async (req, res) => {
+    const token = req.cookies.token;
+    if (!token) {
+        return res.redirect('/login');
+    }
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const isMobile = req.isMobile || false;
+        
+        // Если мобильное устройство - показываем мобильную версию
+        if (isMobile) {
+            res.sendFile(path.join(__dirname, 'views', 'mobile', 'calendar-mobile.html'));
+        } else {
+            res.sendFile(path.join(__dirname, 'views', 'calendar.html'));
+        }
+    } catch (error) {
+        res.clearCookie('token');
+        res.redirect('/login');
+    }
 });
 
 // Страница дашборда
@@ -927,23 +898,157 @@ app.get('/dashboard', async (req, res) => {
         }
         
         const role = users[0].role;
+        const isMobile = req.isMobile;
         
-        switch(role) {
-            case 'activist':
-                res.sendFile(path.join(__dirname, 'views', 'dashboard', 'activist.html'));
-                break;
-            case 'chairman':
-                res.sendFile(path.join(__dirname, 'views', 'dashboard', 'chairman.html'));
-                break;
-            case 'specialist':
-                res.sendFile(path.join(__dirname, 'views', 'dashboard', 'specialist.html'));
-                break;
-            default:
-                res.redirect('/login');
+        // Если мобильное устройство - показываем мобильную версию
+        if (isMobile) {
+            switch(role) {
+                case 'activist':
+                    res.sendFile(path.join(__dirname, 'views', 'mobile', 'activist-mobile.html'));
+                    break;
+                case 'chairman':
+                    res.sendFile(path.join(__dirname, 'views', 'mobile', 'chairman-mobile.html'));
+                    break;
+                case 'specialist':
+                    res.sendFile(path.join(__dirname, 'views', 'mobile', 'specialist-mobile.html'));
+                    break;
+                default:
+                    res.redirect('/login');
+            }
+        } else {
+            // Десктопная версия
+            switch(role) {
+                case 'activist':
+                    res.sendFile(path.join(__dirname, 'views', 'dashboard', 'activist.html'));
+                    break;
+                case 'chairman':
+                    res.sendFile(path.join(__dirname, 'views', 'dashboard', 'chairman.html'));
+                    break;
+                case 'specialist':
+                    res.sendFile(path.join(__dirname, 'views', 'dashboard', 'specialist.html'));
+                    break;
+                default:
+                    res.redirect('/login');
+            }
         }
     } catch (error) {
         res.clearCookie('token');
         res.redirect('/login');
+    }
+});
+
+app.get('/shop', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'shop.html'));
+});
+
+app.get('/merch-admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'merch-admin.html'));
+});
+
+// API для получения информации о достижении
+app.get('/api/achievement/:id', async (req, res) => {
+    try {
+        const db = app.get('db');
+        
+        const [achievements] = await db.execute(
+            `SELECT a.*, 
+                    u.full_name as user_name,
+                    u.team_id as user_team_id,
+                    t.name as user_team,
+                    creator.full_name as creator_name,
+                    creator.role as creator_role,
+                    moderator.full_name as moderator_name
+             FROM achievements a
+             JOIN users u ON a.user_id = u.id
+             JOIN users creator ON a.created_by = creator.id
+             LEFT JOIN users moderator ON a.moderated_by = moderator.id
+             LEFT JOIN teams t ON u.team_id = t.id
+             WHERE a.id = ?`,
+            [req.params.id]
+        );
+
+        if (achievements.length === 0) {
+            return res.status(404).json({ error: 'Достижение не найдено' });
+        }
+
+        res.json(achievements[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Ошибка при получении данных достижения' });
+    }
+});
+
+
+
+// Маршрут для страницы просмотра достижения
+app.get('/achievement-detail.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'achievement-detail.html'));
+});
+
+// Отправка уведомлений о модерации достижения
+app.post('/api/send-achievement-notifications', async (req, res) => {
+    const { achievementId, status, reason, userId, creatorId } = req.body;
+    
+    try {
+        const db = app.get('db');
+        
+        // Получаем информацию о достижении
+        const [achievement] = await db.execute(
+            'SELECT title FROM achievements WHERE id = ?',
+            [achievementId]
+        );
+
+        if (achievement.length === 0) {
+            return res.status(404).json({ error: 'Достижение не найдено' });
+        }
+
+        // Создаем уведомления
+        const notifications = [];
+        const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        
+        // Для активиста
+        notifications.push([
+            userId,
+            `Достижение "${achievement[0].title}" ${status === 'approved' ? 'принято' : 'отклонено'}`,
+            status === 'approved' 
+                ? `Ваше достижение "${achievement[0].title}" принято и баллы начислены.`
+                : `Ваше достижение "${achievement[0].title}" отклонено. Причина: ${reason || 'Не указана'}`,
+            status,
+            achievementId,
+            now
+        ]);
+        
+        // Для создателя (если это не сам активист)
+        if (creatorId !== userId) {
+            notifications.push([
+                creatorId,
+                `Достижение для пользователя ${status === 'approved' ? 'принято' : 'отклонено'}`,
+                status === 'approved' 
+                    ? `Созданное вами достижение "${achievement[0].title}" принято модератором.`
+                    : `Созданное вами достижение "${achievement[0].title}" отклонено. Причина: ${reason || 'Не указана'}`,
+                status,
+                achievementId,
+                now
+            ]);
+        }
+
+        // Сохраняем уведомления
+        for (const notif of notifications) {
+            await db.execute(
+                `INSERT INTO notifications (user_id, title, message, type, related_id, created_at) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                notif
+            );
+        }
+
+        res.json({ 
+            message: 'Уведомления отправлены', 
+            count: notifications.length 
+        });
+        
+    } catch (error) {
+        console.error('Ошибка при отправке уведомлений:', error);
+        res.status(500).json({ error: 'Ошибка при отправке уведомлений' });
     }
 });
 
@@ -967,6 +1072,59 @@ app.get('/chairman-event-edit.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'chairman-event-edit.html'));
 });
 
+app.get('/chairman-achievement-edit.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'chairman-achievement-edit.html'));
+});
+
+
+app.get('/achievement-view.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'achievement-view.html'));
+});
+
+// Страницы восстановления пароля
+app.get('/forgot-password.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'forgot-password.html'));
+});
+
+app.get('/reset-password.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'reset-password.html'));
+});
+
+// Страница завершения регистрации
+app.get('/complete-registration.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'complete-registration.html'));
+});
+
+app.get('/api/test', (req, res) => {
+    console.log('✅ ТЕСТОВЫЙ МАРШРУТ СРАБОТАЛ');
+    res.json({ success: true, message: 'Сервер работает' });
+});
+
+app.get('/api/check-vk/:vkId', async (req, res) => {
+    try {
+        const db = app.get('db');
+        const vkId = req.params.vkId.replace('@', '');
+        
+        console.log(`🔍 Проверка VK ID: ${vkId}`);
+        
+        const [users] = await db.execute(
+            'SELECT id, username FROM users WHERE vk_id = ?',
+            [vkId]
+        );
+        
+        const exists = users.length > 0;
+        console.log(`📊 VK ID ${vkId}: ${exists ? 'ЗАНЯТ' : 'СВОБОДЕН'}`);
+        
+        res.json({ 
+            exists: exists,
+            message: exists ? 'VK ID уже используется' : 'VK ID доступен'
+        });
+    } catch (error) {
+        console.error('❌ Ошибка проверки VK ID:', error);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
 // ============================================
 // ЗАПУСК СЕРВЕРА
 // ============================================
@@ -974,7 +1132,6 @@ app.get('/chairman-event-edit.html', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Сервер запущен на http://${getLocalIp()}:${PORT}`);
-    console.log(`Доступен в локальной сети по адресу: http://192.168.31.1:${PORT}`);
 });
 
 // Функция для получения локального IP

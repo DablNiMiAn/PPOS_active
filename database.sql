@@ -3,25 +3,12 @@
 -- Система рейтинга активистов
 -- =====================================================
 
--- Создание базы данных (если не существует)
-CREATE DATABASE IF NOT EXISTS activist_rating 
-CHARACTER SET utf8mb4 
-COLLATE utf8mb4_unicode_ci;
-
-USE activist_rating;
-
--- =====================================================
--- ТАБЛИЦА: teams (Команды)
--- =====================================================
 CREATE TABLE IF NOT EXISTS teams (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- ТАБЛИЦА: users (Пользователи)
--- =====================================================
 CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -39,9 +26,6 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_users_team (team_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- ТАБЛИЦА: events (Мероприятия)
--- =====================================================
 CREATE TABLE IF NOT EXISTS events (
     id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(200) NOT NULL,
@@ -61,9 +45,6 @@ CREATE TABLE IF NOT EXISTS events (
     INDEX idx_events_date (event_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- ТАБЛИЦА: event_participations (Участие в мероприятиях)
--- =====================================================
 CREATE TABLE IF NOT EXISTS event_participations (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -76,9 +57,6 @@ CREATE TABLE IF NOT EXISTS event_participations (
     UNIQUE KEY unique_user_event (user_id, event_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- ТАБЛИЦА: achievements (Достижения)
--- =====================================================
 CREATE TABLE IF NOT EXISTS achievements (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -100,9 +78,7 @@ CREATE TABLE IF NOT EXISTS achievements (
     INDEX idx_achievements_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- ТАБЛИЦА: penalties (Штрафы)
--- =====================================================
+
 CREATE TABLE IF NOT EXISTS penalties (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -114,9 +90,7 @@ CREATE TABLE IF NOT EXISTS penalties (
     FOREIGN KEY (issued_by) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- ТАБЛИЦА: notifications (Уведомления)
--- =====================================================
+
 CREATE TABLE IF NOT EXISTS notifications (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -130,9 +104,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     INDEX idx_notifications_user (user_id, is_read, created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- ТАБЛИЦА: calendar_events (События календаря)
--- =====================================================
+
 CREATE TABLE IF NOT EXISTS calendar_events (
     id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(200) NOT NULL,
@@ -151,9 +123,7 @@ CREATE TABLE IF NOT EXISTS calendar_events (
     INDEX idx_calendar_events_team (team_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- ТАБЛИЦА: calendar_event_teams (Связь событий с командами)
--- =====================================================
+
 CREATE TABLE IF NOT EXISTS calendar_event_teams (
     id INT PRIMARY KEY AUTO_INCREMENT,
     event_id INT NOT NULL,
@@ -163,9 +133,7 @@ CREATE TABLE IF NOT EXISTS calendar_event_teams (
     UNIQUE KEY unique_event_team (event_id, team_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =====================================================
--- ТАБЛИЦА: rating_update_queue (Очередь обновления рейтингов)
--- =====================================================
+
 CREATE TABLE IF NOT EXISTS rating_update_queue (
     id INT PRIMARY KEY AUTO_INCREMENT,
     event_id INT,
@@ -175,3 +143,95 @@ CREATE TABLE IF NOT EXISTS rating_update_queue (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_rating_queue_processed (processed)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Таблица категорий товаров
+CREATE TABLE shop_categories (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    sort_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблица товаров
+CREATE TABLE shop_products (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    price INT NOT NULL,
+    image VARCHAR(500),
+    category_id INT,
+    has_options BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    stock INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES shop_categories(id) ON DELETE SET NULL
+);
+
+-- Таблица опций товаров (размеры, цвета и т.д.)
+CREATE TABLE shop_product_options (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    option_name VARCHAR(100) NOT NULL, -- 'size', 'color', 'type'
+    option_value VARCHAR(100) NOT NULL, -- 'S', 'M', 'L', 'Red', 'Blue'
+    stock INT DEFAULT 0,
+    extra_price INT DEFAULT 0,
+    FOREIGN KEY (product_id) REFERENCES shop_products(id) ON DELETE CASCADE
+);
+
+-- Таблица корзины
+CREATE TABLE shop_cart (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    option_id INT,
+    quantity INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES shop_products(id) ON DELETE CASCADE,
+    FOREIGN KEY (option_id) REFERENCES shop_product_options(id) ON DELETE SET NULL
+);
+
+-- Таблица заказов
+CREATE TABLE shop_orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    order_number VARCHAR(50) UNIQUE NOT NULL,
+    total_price INT NOT NULL,
+    status ENUM('pending', 'processing', 'completed', 'cancelled') DEFAULT 'pending',
+    contact_phone VARCHAR(20),
+    contact_name VARCHAR(100),
+    delivery_address TEXT,
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Таблица товаров в заказе
+CREATE TABLE shop_order_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    product_name VARCHAR(200) NOT NULL,
+    option_name VARCHAR(100),
+    option_value VARCHAR(100),
+    quantity INT NOT NULL,
+    price INT NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES shop_orders(id) ON DELETE CASCADE
+);
+
+-- Таблица настроек магазина (для ответственных за мерч)
+CREATE TABLE shop_settings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    responsible_user_id INT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (responsible_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Вставка категорий
+INSERT INTO shop_categories (name, sort_order) VALUES 
+('Канцелярия', 1),
+('Одежда', 2),
+('Аксессуары', 3),
+('Разное', 4);
