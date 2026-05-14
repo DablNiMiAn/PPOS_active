@@ -1,61 +1,68 @@
-// ========== БОКОВАЯ ПАНЕЛЬ СПРАВА ==========
+// ========== БОКОВАЯ ПАНЕЛЬ - УНИВЕРСАЛЬНЫЙ МОДУЛЬ ==========
 
 let sidebarInitialized = false;
-
 window.sidebarUser = null;
 
+// Конфигурация меню по ролям (с путями к SVG иконкам)
+const menuConfig = {
+    activist: {
+        items: [
+            { icon: '/images/User Interface/home.svg', text: 'Главная', href: '/dashboard' },
+            { icon: '/images/User Interface/shop.svg', text: 'Магазин', href: '/shop' },
+            { icon: '/images/User Interface/calendar.svg', text: 'Календарь', href: '/calendar' }
+        ]
+    },
+    chairman: {
+        items: [
+            { icon: '/images/User Interface/home.svg', text: 'Главная', href: '/dashboard' },
+            { icon: '/images/User Interface/event.svg', text: 'Создать мероприятие', href: '/dashboard?modal=event' },
+            { icon: '/images/User Interface/reward.svg', text: 'Добавить достижение', href: '/dashboard?modal=achievement' },
+            { icon: '/images/User Interface/shop.svg', text: 'Магазин', href: '/shop' },
+            { icon: '/images/User Interface/calendar.svg', text: 'Календарь', href: '/calendar' }
+        ]
+    },
+    specialist: {
+        items: [
+            { icon: '/images/User Interface/home.svg', text: 'Главная', href: '/dashboard' },
+            { icon: '/images/User Interface/alert.svg', text: 'Штраф', href: '/dashboard?modal=penalty' },
+            { icon: '/images/User Interface/team.svg', text: 'Создать команду', href: '/dashboard?modal=team' },
+            { icon: '/images/User Interface/event.svg', text: 'Создать мероприятие', href: '/dashboard?modal=event' },
+            { icon: '/images/User Interface/admin.svg', text: 'Управление мерчем', href: '/merch-admin' },
+            { icon: '/images/User Interface/shop.svg', text: 'Магазин', href: '/shop' },
+            { icon: '/images/User Interface/calendar.svg', text: 'Календарь', href: '/calendar' }
+        ]
+    }
+};
+
+// Инициализация сайдбара
 async function initSidebar() {
     if (sidebarInitialized) return;
     
     try {
         const response = await fetch('/api/user');
-        const user = await response.json();
-        
-        // Сохраняем глобально
-        window.sidebarUser = user;
-        
-        // Обновляем профиль в сайдбаре
-        updateSidebarProfile(user);
-        
-        // Обновляем навигационное меню в зависимости от роли
-        updateSidebarNav(user.role);
-        
-        sidebarInitialized = true;
-        
-        // Проверяем сохраненное состояние сайдбара
-        const savedState = localStorage.getItem('sidebarCollapsed');
-        if (savedState === 'true') {
-            document.getElementById('sidebar').classList.add('collapsed');
-            document.querySelector('.main-content').classList.add('expanded');
-            const toggleBtn = document.querySelector('.sidebar-toggle i');
-            if (toggleBtn) toggleBtn.textContent = '▶';
+        if (!response.ok) {
+            window.location.href = '/login';
+            return;
         }
         
-    } catch (error) {
-        console.error('Ошибка инициализации сайдбара:', error);
-    }
-}
-// Инициализация боковой панели
-async function initSidebar() {
-    if (sidebarInitialized) return;
-    
-    try {
-        // Загружаем данные пользователя
-        const response = await fetch('/api/user');
         const user = await response.json();
+        window.sidebarUser = user;
         
-        // Обновляем профиль в сайдбаре
         updateSidebarProfile(user);
-        
-        // Обновляем навигационное меню в зависимости от роли
         updateSidebarNav(user.role);
-        
-        // Добавляем overlay для мобильных
         addMobileOverlay();
         
         sidebarInitialized = true;
         
-        // Проверяем размер экрана при загрузке
+        // Восстанавливаем состояние сайдбара
+        const savedState = localStorage.getItem('sidebarCollapsed');
+        if (savedState === 'true') {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            if (sidebar) sidebar.classList.add('collapsed');
+            if (mainContent) mainContent.classList.add('expanded');
+        }
+        
         handleResize();
         
     } catch (error) {
@@ -63,28 +70,6 @@ async function initSidebar() {
     }
 }
 
-// Добавление overlay для мобильных
-function addMobileOverlay() {
-    if (!document.querySelector('.sidebar-overlay')) {
-        const overlay = document.createElement('div');
-        overlay.className = 'sidebar-overlay';
-        overlay.onclick = closeMobileMenu;
-        document.body.appendChild(overlay);
-    }
-}
-
-// Обработка изменения размера окна
-function handleResize() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (window.innerWidth > 768) {
-        if (sidebar) sidebar.classList.remove('mobile-open');
-        if (overlay) overlay.classList.remove('active');
-    }
-}
-
-// Обновление профиля в сайдбаре
 function updateSidebarProfile(user) {
     const avatar = document.getElementById('sidebarAvatar');
     const userName = document.getElementById('sidebarUserName');
@@ -99,181 +84,158 @@ function updateSidebarProfile(user) {
     if (userRole) userRole.textContent = getRoleDisplay(user.role);
 }
 
-// Обновление навигационного меню
 function updateSidebarNav(role) {
     const nav = document.getElementById('sidebarNav');
     if (!nav) return;
     
-    let menuItems = [];
+    const config = menuConfig[role];
+    if (!config) return;
     
-    // Базовые пункты меню для всех
-    menuItems.push({
-        icon: '🏠',
-        text: 'Главная',
-        link: '/dashboard',
-        active: window.location.pathname === '/dashboard'
-    });
-    
-    // Пункты меню в зависимости от роли
-    switch(role) {
-        case 'activist':
-            menuItems.push({
-                icon: '📊',
-                text: 'Мой профиль',
-                link: '#',
-                onclick: 'showProfile()',
-                active: false
-            });
-            break;
-            
-        case 'chairman':
-            menuItems.push({
-                icon: '➕',
-                text: 'Создать мероприятие',
-                link: '#',
-                onclick: 'showCreateEventModal()',
-                active: false
-            });
-            menuItems.push({
-                icon: '🏆',
-                text: 'Добавить достижение',
-                link: '#',
-                onclick: 'showCreateAchievementModal()',
-                active: false
-            });
-            break;
-            
-        case 'specialist':
-            menuItems.push({
-                icon: '➕',
-                text: 'Создать мероприятие',
-                link: '#',
-                onclick: 'showCreateEventModal()',
-                active: false
-            });
-            menuItems.push({
-                icon: '👤',
-                text: 'Создать пользователя',
-                link: '#',
-                onclick: 'showCreateUserModal()',
-                active: false
-            });
-            menuItems.push({
-                icon: '👥',
-                text: 'Создать команду',
-                link: '#',
-                onclick: 'showCreateTeamModal()',
-                active: false
-            });
-            menuItems.push({
-                icon: '⚠️',
-                text: 'Штраф',
-                link: '#',
-                onclick: 'showPenaltyModal()',
-                active: false
-            });
-            break;
-    }
-    
-    // Пункт выхода для всех
-    menuItems.push({
-        icon: '🚪',
-        text: 'Выход',
-        link: '#',
-        onclick: 'logout()',
-        active: false
-    });
-    
-    // Рендерим меню
-    renderSidebarNav(menuItems);
-}
-
-// Рендеринг навигационного меню
-function renderSidebarNav(items) {
-    const nav = document.getElementById('sidebarNav');
     nav.innerHTML = '';
     
-    items.forEach(item => {
+    config.items.forEach(item => {
         const li = document.createElement('li');
         li.className = 'sidebar-nav-item';
         
         const a = document.createElement('a');
-        a.className = `sidebar-nav-link ${item.active ? 'active' : ''}`;
-        a.href = item.link;
+        a.className = 'sidebar-nav-link';
         
-        if (item.onclick) {
-            a.setAttribute('onclick', item.onclick + '; return false;');
+        if (item.href === window.location.pathname || 
+            (item.href === '/dashboard' && window.location.pathname === '/dashboard')) {
+            a.classList.add('active');
         }
         
-        a.innerHTML = `
-            <i>${item.icon}</i>
-            <span>${item.text}</span>
-        `;
+        // Создаем img для иконки
+        const img = document.createElement('img');
+        img.src = item.icon;
+        img.className = 'sidebar-icon';
+        img.alt = item.text;
+        
+        // Создаем span для текста
+        const span = document.createElement('span');
+        span.textContent = item.text;
+        
+        a.appendChild(img);
+        a.appendChild(span);
+        a.href = item.href;
         
         li.appendChild(a);
         nav.appendChild(li);
     });
+    
+    // Пункт выхода
+    const logoutLi = document.createElement('li');
+    logoutLi.className = 'sidebar-nav-item';
+    const logoutA = document.createElement('a');
+    logoutA.className = 'sidebar-nav-link';
+    logoutA.href = '#';
+    logoutA.onclick = (e) => {
+        e.preventDefault();
+        showLogoutConfirm();
+    };
+    
+    const logoutImg = document.createElement('img');
+    logoutImg.src = '/images/User Interface/Backspace.svg';
+    logoutImg.className = 'sidebar-icon';
+    logoutImg.alt = 'Выход';
+    
+    const logoutSpan = document.createElement('span');
+    logoutSpan.textContent = 'Выход';
+    
+    logoutA.appendChild(logoutImg);
+    logoutA.appendChild(logoutSpan);
+    logoutLi.appendChild(logoutA);
+    nav.appendChild(logoutLi);
 }
 
-// Функция выхода
-async function logout() {
+function addMobileOverlay() {
+    if (!document.querySelector('.sidebar-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        overlay.onclick = closeMobileMenu;
+        document.body.appendChild(overlay);
+    }
+}
+
+function handleResize() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (window.innerWidth > 768) {
+        if (sidebar) sidebar.classList.remove('mobile-open');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (!sidebar) return;
+    
+    sidebar.classList.toggle('mobile-open');
+    if (overlay) overlay.classList.toggle('active');
+    
+    document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+}
+
+function closeMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.querySelector('.main-content');
+    
+    if (!sidebar || !mainContent) return;
+    
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded');
+    
+    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+}
+
+// ==================== ФУНКЦИИ ВЫХОДА ====================
+function showLogoutConfirm() {
+    const modal = document.getElementById('logoutModal');
+    if (modal) {
+        modal.style.display = 'block';
+    } else {
+        confirmLogout();
+    }
+}
+
+function closeLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function confirmLogout() {
     try {
         await fetch('/auth/logout', { method: 'POST' });
         window.location.href = '/login';
     } catch (error) {
         console.error('Ошибка при выходе:', error);
+        alert('Произошла ошибка при выходе');
     }
 }
 
-// Сворачивание/разворачивание боковой панели
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.querySelector('.main-content');
-    const toggleBtn = document.querySelector('.sidebar-toggle i');
-    
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('expanded');
-    
-    if (sidebar.classList.contains('collapsed')) {
-        toggleBtn.textContent = '▶';
-        localStorage.setItem('sidebarCollapsed', 'true');
-    } else {
-        toggleBtn.textContent = '◀';
-        localStorage.setItem('sidebarCollapsed', 'false');
+// ==================== ПРОФИЛЬ ====================
+function showProfile() {
+    const userId = window.sidebarUser?.id;
+    const role = window.sidebarUser?.role;
+    if (userId && role) {
+        window.location.href = `/profile.html?id=${userId}&role=${role}`;
     }
 }
 
-// Открытие мобильного меню
-function toggleMobileMenu() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    sidebar.classList.toggle('mobile-open');
-    if (overlay) {
-        overlay.classList.toggle('active');
-    }
-    
-    // Блокируем скролл body при открытом меню
-    if (sidebar.classList.contains('mobile-open')) {
-        document.body.style.overflow = 'hidden';
-    } else {
-        document.body.style.overflow = '';
-    }
-}
-
-// Закрытие мобильного меню
-function closeMobileMenu() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    sidebar.classList.remove('mobile-open');
-    if (overlay) {
-        overlay.classList.remove('active');
-    }
-    document.body.style.overflow = '';
-}
-
-// Получение отображаемого названия роли
+// ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 function getRoleDisplay(role) {
     const roles = {
         'activist': 'Активист',
@@ -283,23 +245,7 @@ function getRoleDisplay(role) {
     return roles[role] || role;
 }
 
-// Слушаем изменение размера окна
-window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-        closeMobileMenu();
-    }
-    handleResize();
+// Инициализация
+document.addEventListener('DOMContentLoaded', () => {
+    initSidebar();
 });
-
-// Инициализация при загрузке страницы
-document.addEventListener('click', function(event) {
-    const sidebar = document.getElementById('sidebar');
-    const menuToggle = document.querySelector('.menu-toggle');
-    
-    if (window.innerWidth <= 768) {
-        if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
-            sidebar.classList.remove('mobile-open');
-        }
-    }
-});
-

@@ -196,7 +196,7 @@ function canEditEvent(event) {
 // Загрузка событий
 async function loadEvents() {
     const status = document.getElementById('status');
-    status.innerHTML = '⏳ Загрузка...';
+    status.innerHTML = 'Загрузка...';
     
     try {
         const response = await fetch('/api/calendar-fixed');
@@ -206,19 +206,34 @@ async function loadEvents() {
         }
         
         allEvents = await response.json();
-        console.log('📅 Загружены события:', allEvents);
+        console.log('Загружены события:', allEvents);
         
-        status.innerHTML = `✅ Загружено событий: ${allEvents.length}`;
+        status.innerHTML = `<img src="/images/User Interface/yes.svg" class="sidebar-icon"> Загружено событий: ${allEvents.length}`;
         
         // Применяем фильтр
         filterEvents();
         
     } catch (error) {
-        console.error('❌ Ошибка:', error);
-        status.innerHTML = `❌ Ошибка загрузки`;
+        console.error('<img src="/images/User Interface/no.svg" class="sidebar-icon"> Ошибка:', error);
+        status.innerHTML = `<img src="/images/User Interface/no.svg" class="sidebar-icon"> Ошибка загрузки`;
     }
 }
 
+        function showProfile() {
+    if (currentUser && currentUser.id) {
+        let role = currentUser.role;
+        // Определяем роль для URL
+        let roleParam = 'activist';
+        if (role === 'chairman') roleParam = 'chairman';
+        else if (role === 'specialist') roleParam = 'specialist';
+        else roleParam = 'activist';
+        
+        window.location.href = `/profile.html?id=${currentUser.id}&role=${roleParam}`;
+    } else {
+        console.error('❌ Нет данных пользователя для перехода в профиль');
+        window.location.href = '/profile.html';
+    }
+}
 // Фильтрация событий
 function filterEvents() {
     const filterValue = document.getElementById('teamFilter').value;
@@ -435,8 +450,39 @@ window.addEventListener('click', (event) => {
     }
 });
 
-// Выход
+// ==================== ФУНКЦИИ ВЫХОДА С ПОДТВЕРЖДЕНИЕМ ====================
+
+// Функция открытия модального окна выхода
+function showLogoutConfirm() {
+    const modal = document.getElementById('logoutModal');
+    if (modal) {
+        modal.style.display = 'block';
+    } else {
+        // Если модального окна нет, выходим сразу
+        confirmLogout();
+    }
+}
+
+// Функция закрытия модального окна выхода
+function closeLogoutModal() {
+    const modal = document.getElementById('logoutModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Функция подтверждения выхода
+async function confirmLogout() {
+    try {
+        await fetch('/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    } catch (error) {
+        console.error('Ошибка при выходе:', error);
+        alert('Произошла ошибка при выходе');
+    }
+}
+
+// Обновленная функция logout
 async function logout() {
-    await fetch('/auth/logout', { method: 'POST' });
-    window.location.href = '/login';
+    showLogoutConfirm();
 }
