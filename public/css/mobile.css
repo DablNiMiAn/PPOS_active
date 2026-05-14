@@ -1,0 +1,59 @@
+/* mobile.css - дополнительные стили для мобильной версии */
+.mobile-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Оптимизация для маленьких экранов */
+@media (max-width: 480px) {
+    .profile-card {
+        padding: 15px;
+    }
+    
+    .profile-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .profile-info h2 {
+        font-size: 1rem;
+    }
+    
+    .card {
+        padding: 12px;
+    }
+    
+    .event-item, .achievement-item, .user-item {
+        padding: 10px;
+    }
+    
+    .event-meta, .achievement-meta {
+        font-size: 0.7rem;
+        gap: 5px;
+    }
+    
+    .btn-small {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+}
+
+/* Сглаживание касаний */
+.event-item, .user-item, .achievement-item {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.event-item:active, .user-item:active, .achievement-item:active {
+    background: #f5f5f5;
+}
+
+/* Увеличенные зоны нажатия */
+button, .nav-item {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
