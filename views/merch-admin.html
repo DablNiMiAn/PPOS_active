@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление мерчем - Админ панель</title>
+    <link rel="icon" type="image/x-icon" href="/images/logo.ico">
+    <link rel="shortcut icon" href="/images/logo.ico">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <style>
+        .admin-container { padding: 20px; }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .admin-tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .admin-tab.active { background: #bf5254; color: white; }
+        .admin-section { display: none; animation: fadeIn 0.3s ease; }
+        .admin-section.active { display: block; }
+        
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .product-images { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        
+        .image-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .image-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .image-item .remove-image {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .btn-primary { background: #bf5254; color: white; }
+        .btn-success { background: #48bb78; color: white; }
+        .btn-danger { background: #f56565; color: white; }
+        .btn-warning { background: #ecc94b; color: #333; }
+        .btn-sm { padding: 5px 10px; font-size: 0.85rem; }
+        
+        .image-preview { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+        
+        .preview-item {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .file-upload-area {
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        
+        .file-upload-area:hover { border-color: #bf5254; background: #fef4f4; }
+        .file-upload-area.dragover { border-color: #bf5254; background: #fee; }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1100;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success { background: #48bb78; }
+        .notification.error { background: #f56565; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .status-pending { background: #ecc94b; }
+        .status-processing { background: #4299e1; color: white; }
+        .status-completed { background: #48bb78; color: white; }
+        .status-cancelled { background: #f56565; color: white; }
+        
+        .option-item {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .form-row .form-group { flex: 1; }
+        
+        input, select, textarea {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #bf5254;
+        }
+        
+        .color-option-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+        }
+        
+        .size-option-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .option-type-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .option-type-btn {
+            padding: 8px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .option-type-btn.active {
+            background: #bf5254;
+            color: white;
+        }
+        
+        .options-panel { display: none; }
+        .options-panel.active { display: block; }
+        
+        .preset-color {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .preset-color:hover {
+            transform: scale(1.1);
+            border-color: #bf5254;
+        }
+        
+        .image-upload-for-color { margin-top: 10px; }
+        hr { margin: 20px 0; border: none; border-top: 1px solid #e0e0e0; }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 10px;
+        }
+        
+        .sidebar-profile-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            width: 100%;
+            transition: transform 0.2s ease;
+        }
+        
+        .sidebar-profile-link:hover {
+            transform: scale(1.05);
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-toggle { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ДИНАМИЧЕСКИЙ САЙДБАР -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <a href="/dashboard" class="logo-container">
+                    <img src="/images/company1w.png" alt="Company 1" class="logo-image">
+                    <span class="logo-cross logo-cross-colored"></span>
+                    <img src="/images/company2w.png" alt="Company 2" class="logo-image logo-text">
+                </a>
+            </div>
+
+            <a href="#" class="sidebar-profile-link" onclick="showProfile(); return false;">
+                <div class="sidebar-profile" id="sidebarProfile">
+                    <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
+                    <div class="sidebar-profile-info">
+                        <h4 id="sidebarUserName">Загрузка...</h4>
+                        <p id="sidebarUserRole"></p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Меню будет сгенерировано sidebar.js -->
+            <ul class="sidebar-nav" id="sidebarNav"></ul>
+        </div>
+
+        <!-- Верхняя панель для мобильных -->
+        <div class="top-bar">
+            <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+            <div class="mobile-logo">
+                <img src="/images/company1.png" style="height:30px;">
+                <span class="logo-cross" style="width:20px;height:20px;"></span>
+                <img src="/images/company2.png" style="height:30px;">
+            </div>
+            <div></div>
+        </div>
+
+        <main class="main-content">
+            <div class="admin-container">
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="switchTab('orders')">📋 Заказы</button>
+                    <button class="admin-tab" onclick="switchTab('products')">🛍️ Товары</button>
+                    <button class="admin-tab" onclick="switchTab('notifications')">🔔 Уведомления</button>
+                    <button class="admin-tab" onclick="switchTab('add-product')">➕ Добавить товар</button>
+                </div>
+
+                <!-- Заказы -->
+                <div id="orders-section" class="admin-section active">
+                    <div class="card">
+                        <div class="card-header"><h2>📋 Заказы</h2>
+                            <select id="orderStatusFilter" onchange="loadOrders()" style="padding: 5px 10px;">
+                                <option value="all">Все статусы</option>
+                                <option value="pending">Ожидает</option>
+                                <option value="processing">В обработке</option>
+                                <option value="completed">Выполнен</option>
+                                <option value="cancelled">Отменен</option>
+                            </select>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead><tr><th>№</th><th>Пользователь</th><th>Товары</th><th>Сумма</th><th>Статус</th><th>Дата</th><th>Действия</th></tr></thead>
+                                <tbody id="ordersList"><tr><td colspan="7">Загрузка...</tr></table></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Товары -->
+                <div id="products-section" class="admin-section">
+                    <div class="card">
+                        <div class="card-header"><h2>🛍️ Товары</h2>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="categoryFilter" onchange="loadProducts()"><option value="all">Все категории</option></select>
+                                <input type="text" id="searchProduct" placeholder="🔍 Поиск..." oninput="loadProducts()">
+                            </div>
+                        </div>
+                        <div id="productsList">Загрузка...</div>
+                    </div>
+                </div>
+
+                <!-- Управление уведомлениями -->
+<div id="notifications-section" class="admin-section">
+    <div class="card">
+        <div class="card-header">
+            <h2>🔔 Управление уведомлениями о заказах</h2>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <p style="color: #666; margin-bottom: 15px;">Специалисты, которые будут получать уведомления о новых заказах:</p>
+            <div id="notificationsList" style="margin-bottom: 20px;">
+                <div style="text-align: center; padding: 20px;">Загрузка...</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: flex-end;">
+                <div style="flex: 1;">
+                    <label for="addSpecialistSelect">➕ Добавить специалиста</label>
+                    <select id="addSpecialistSelect" class="filter-select" style="width: 100%;">
+                        <option value="">Выберите специалиста</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="addNotificationSpecialist()" style="height: 42px;">Добавить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+                <!-- Добавление товара -->
+                <div id="add-product-section" class="admin-section">
+                    <div class="card">
+                        <div class="card-header"><h2>➕ Добавление товара</h2></div>
+                        <form id="addProductForm" enctype="multipart/form-data">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Название*</label>
+                                    <input type="text" id="productName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Категория*</label>
+                                    <select id="productCategory" required></select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Описание</label>
+                                <textarea id="productDescription" rows="2"></textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Цена (баллы)*</label>
+                                    <input type="number" id="productPrice" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Количество на складе*</label>
+                                    <input type="number" id="productStock" min="0" value="0" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Общие изображения товара</label>
+                                <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('productImages').click()">
+                                    📸 Нажмите или перетащите изображения сюда
+                                    <input type="file" id="productImages" name="images" multiple accept="image/*" style="display:none" onchange="previewImages()">
+                                </div>
+                                <div id="imagePreview" class="image-preview"></div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <h3>🎨 Цвета и размеры</h3>
+                            
+                            <div class="option-type-tabs">
+                                <button type="button" class="option-type-btn active" onclick="showOptionType('colors')">Цвета</button>
+                                <button type="button" class="option-type-btn" onclick="showOptionType('sizes')">Размеры</button>
+                            </div>
+                            
+                            <div id="colors-panel" class="options-panel active">
+                                <div id="colorsList"></div>
+                                <button type="button" class="btn btn-sm btn-success" onclick="addColorOption()">+ Добавить цвет</button>
+                                
+                                <div style="margin-top: 15px; background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                                    <label style="font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block;">🎨 Быстрые цвета:</label>
+                                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                        <div class="preset-color" style="background: #FF0000;" onclick="addPresetColor('Красный', '#FF0000')" title="Красный"></div>
+                                        <div class="preset-color" style="background: #0000FF;" onclick="addPresetColor('Синий', '#0000FF')" title="Синий"></div>
+                                        <div class="preset-color" style="background: #00FF00;" onclick="addPresetColor('Зеленый', '#00FF00')" title="Зеленый"></div>
+                                        <div class="preset-color" style="background: #FFFF00;" onclick="addPresetColor('Желтый', '#FFFF00')" title="Желтый"></div>
+                                        <div class="preset-color" style="background: #000000;" onclick="addPresetColor('Черный', '#000000')" title="Черный"></div>
+                                        <div class="preset-color" style="background: #FFFFFF; border:1px solid #ccc;" onclick="addPresetColor('Белый', '#FFFFFF')" title="Белый"></div>
+                                        <div class="preset-color" style="background: #808080;" onclick="addPresetColor('Серый', '#808080')" title="Серый"></div>
+                                        <div class="preset-color" style="background: #FFC0CB;" onclick="addPresetColor('Розовый', '#FFC0CB')" title="Розовый"></div>
+                                        <div class="preset-color" style="background: #800080;" onclick="addPresetColor('Фиолетовый', '#800080')" title="Фиолетовый"></div>
+                                        <div class="preset-color" style="background: #FFA500;" onclick="addPresetColor('Оранжевый', '#FFA500')" title="Оранжевый"></div>
+                                        <div class="preset-color" style="background: #8B4513;" onclick="addPresetColor('Коричневый', '#8B4513')" title="Коричневый"></div>
+                                        <div class="preset-color" style="background: #00FFFF;" onclick="addPresetColor('Голубой', '#00FFFF')" title="Голубой"></div>
+                                        <div class="preset-color" style="background: #800000;" onclick="addPresetColor('Бордовый', '#800000')" title="Бордовый"></div>
+                                        <div class="preset-color" style="background: #6B8E23;" onclick="addPresetColor('Хаки', '#6B8E23')" title="Хаки"></div>
+                                        <div class="preset-color" style="background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);" onclick="addCustomColorFromPicker()" title="Свой цвет"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="sizes-panel" class="options-panel">
+                                <div id="sizesList"></div>
+                                <button type="button" class="btn btn-sm btn-success" onclick="addSizeOption()">+ Добавить размер</button>
+                                <div style="margin-top: 15px; background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                                    <label style="font-size: 0.8rem; color: #666; margin-bottom: 5px; display: block;">📏 Быстрые размеры:</label>
+                                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                        <button type="button" class="btn btn-sm" style="background:#e0e0e0; padding: 4px 10px; font-size: 0.75rem;" onclick="addPresetSize('XS')">XS</button>
+                                        <button type="button" class="btn btn-sm" style="background:#e0e0e0; padding: 4px 10px; font-size: 0.75rem;" onclick="addPresetSize('S')">S</button>
+                                        <button type="button" class="btn btn-sm" style="background:#e0e0e0; padding: 4px 10px; font-size: 0.75rem;" onclick="addPresetSize('M')">M</button>
+                                        <button type="button" class="btn btn-sm" style="background:#e0e0e0; padding: 4px 10px; font-size: 0.75rem;" onclick="addPresetSize('L')">L</button>
+                                        <button type="button" class="btn btn-sm" style="background:#e0e0e0; padding: 4px 10px; font-size: 0.75rem;" onclick="addPresetSize('XL')">XL</button>
+                                        <button type="button" class="btn btn-sm" style="background:#e0e0e0; padding: 4px 10px; font-size: 0.75rem;" onclick="addPresetSize('XXL')">XXL</button>
+                                        <button type="button" class="btn btn-sm" style="background:#e0e0e0; padding: 4px 10px; font-size: 0.75rem;" onclick="addPresetSize('XXXL')">XXXL</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" style="margin-top: 20px;">➕ Добавить товар</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Модальное окно редактирования -->
+    <div id="editProductModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000;">
+        <div class="modal-content" style="background:white; border-radius:15px; padding:25px; max-width:700px; width:90%; max-height:85vh; overflow-y:auto;">
+            <div class="modal-header" style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h2>✏️ Редактирование товара</h2>
+                <span onclick="closeEditProductModal()" style="cursor:pointer; font-size:24px;">&times;</span>
+            </div>
+            <form id="editProductForm" enctype="multipart/form-data">
+                <input type="hidden" id="editProductId">
+                <div class="form-group"><label>Название</label><input type="text" id="editProductName" required></div>
+                <div class="form-group"><label>Описание</label><textarea id="editProductDescription" rows="2"></textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Цена</label><input type="number" id="editProductPrice" min="1" required></div>
+                    <div class="form-group"><label>Скидка (%)</label><input type="number" id="editProductDiscount" min="0" max="100" value="0"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Добавить новые общие изображения</label>
+                    <input type="file" id="editProductImages" multiple accept="image/*" onchange="previewEditImages()">
+                    <div id="editImagePreview" class="image-preview"></div>
+                    <div id="existingImages" style="margin-top:10px;"></div>
+                </div>
+                
+                <div class="form-group"><label>Активен</label>
+                    <select id="editProductActive"><option value="1">Да</option><option value="0">Нет</option></select>
+                </div>
+                
+                <hr>
+                <h3>🎨 Цвета и изображения для цветов</h3>
+                <div id="editColorsList"></div>
+                <button type="button" class="btn btn-sm btn-success" onclick="addEditColorOption()">+ Добавить цвет</button>
+                
+                <hr>
+                <h3>📏 Размеры</h3>
+                <div id="editSizesList"></div>
+                <button type="button" class="btn btn-sm btn-success" onclick="addEditSizeOption()">+ Добавить размер</button>
+                
+                <div class="form-actions" style="display:flex; gap:10px; margin-top:15px;">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteProduct()">Удалить товар</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно выхода -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header">
+                <h2>Подтверждение выхода</h2>
+                <span class="close" onclick="closeLogoutModal()">&times;</span>
+            </div>
+            <div style="padding: 20px;">
+                <p style="font-size: 1.1rem; margin-bottom: 20px;">Вы уверены, что хотите выйти из системы?</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn btn-secondary" onclick="closeLogoutModal()" style="padding: 10px 20px;">Отмена</button>
+                    <button class="btn btn-primary" onclick="confirmLogout()" style="padding: 10px 20px; background: #f56565;">Выйти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подключение скриптов -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/modals.js"></script>
+    <script src="/js/sidebar.js"></script>
+    
+    <script>
+        let currentUser = null;
+        let currentEditProductId = null;
+        let notificationSpecialists = [];
+        
+        // Палитра цветов для быстрого выбора
+        const colorHexMap = {
+            'Красный': '#FF0000', 'Синий': '#0000FF', 'Зеленый': '#00FF00', 'Желтый': '#FFFF00',
+            'Черный': '#000000', 'Белый': '#FFFFFF', 'Серый': '#808080', 'Розовый': '#FFC0CB',
+            'Фиолетовый': '#800080', 'Оранжевый': '#FFA500', 'Коричневый': '#8B4513',
+            'Голубой': '#00FFFF', 'Бордовый': '#800000', 'Хаки': '#6B8E23'
+        };
+        
+        // ==================== ЗАГРУЗКА ====================
+        async function loadAdminData() {
+    try {
+        const userResponse = await fetch('/api/user');
+        if (!userResponse.ok) { window.location.href = '/login'; return; }
+        currentUser = await userResponse.json();
+        
+        if (typeof window.updateSidebarProfile === 'function') {
+            window.updateSidebarProfile(currentUser);
+            window.updateSidebarNav(currentUser.role);
+        }
+        
+        await loadCategories();
+        await loadOrders();
+        await loadProducts();
+        await loadNotificationSpecialists(); // ДОБАВИТЬ ЭТУ СТРОКУ
+        setupDragAndDrop();
+    } catch(e) { console.error(e); }
+}
+        
+        function setupDragAndDrop() {
+            const dropArea = document.getElementById('fileUploadArea');
+            if (!dropArea) return;
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
+            });
+            
+            dropArea.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                const fileInput = document.getElementById('productImages');
+                if (fileInput) {
+                    fileInput.files = files;
+                    previewImages();
+                }
+            });
+        }
+        
+        function addCustomColorFromPicker() {
+            const input = document.createElement('input');
+            input.type = 'color';
+            input.style.position = 'fixed';
+            input.style.opacity = '0';
+            input.style.pointerEvents = 'none';
+            document.body.appendChild(input);
+            
+            input.addEventListener('change', (e) => {
+                const colorHex = e.target.value;
+                let colorName = prompt('Введите название цвета:', 'Новый цвет');
+                if (colorName) {
+                    addColorOption(colorName, 1, 0, null);
+                }
+                document.body.removeChild(input);
+            });
+            
+            input.click();
+        }
+        
+        function showOptionType(type) {
+            document.querySelectorAll('.option-type-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.options-panel').forEach(panel => panel.classList.remove('active'));
+            
+            if (type === 'colors') {
+                document.querySelector('.option-type-btn:first-child').classList.add('active');
+                document.getElementById('colors-panel').classList.add('active');
+            } else {
+                document.querySelector('.option-type-btn:last-child').classList.add('active');
+                document.getElementById('sizes-panel').classList.add('active');
+            }
+        }
+        
+        function switchTab(tabName) {
+    document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(`${tabName}-section`).classList.add('active');
+    event.target.classList.add('active');
+    if (tabName === 'orders') loadOrders();
+    if (tabName === 'products') loadProducts();
+    if (tabName === 'notifications') loadNotificationSpecialists();
+}
+        
+        // ==================== КАТЕГОРИИ ====================
+        async function loadCategories() {
+            try {
+                const res = await fetch('/api/shop/categories');
+                const cats = await res.json();
+                const select = document.getElementById('productCategory');
+                const filter = document.getElementById('categoryFilter');
+                select.innerHTML = '<option value="">Выберите категорию</option>';
+                filter.innerHTML = '<option value="all">Все категории</option>';
+                cats.forEach(c => {
+                    select.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+                    filter.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+                });
+            } catch(e) { console.error(e); }
+        }
+        
+        // ==================== ЦВЕТА (при создании) ====================
+        function addColorOption(colorName = '', stock = 1, extraPrice = 0, imageData = null) {
+            const container = document.getElementById('colorsList');
+            const id = Date.now() + Math.random();
+            const div = document.createElement('div');
+            div.className = 'color-option-row';
+            div.id = `color-${id}`;
+            
+            const colorHex = colorName ? (colorHexMap[colorName] || '#CCCCCC') : '#CCCCCC';
+            
+            div.innerHTML = `
+                <div class="color-preview" style="background: ${colorHex}; border: ${colorHex === '#FFFFFF' ? '1px solid #ccc' : 'none'}"></div>
+                <input type="text" placeholder="Название цвета" value="${escapeHtml(colorName)}" style="width:100px;">
+                <input type="number" placeholder="Кол-во" value="${stock}" style="width:70px;" min="0">
+                <input type="number" placeholder="Доп. цена" value="${extraPrice}" style="width:80px;" min="0">
+                <div class="image-upload-for-color">
+                    <input type="file" accept="image/*" onchange="previewColorImage(this, ${id})">
+                    <div class="color-image-preview" style="display:inline-block; width:40px; height:40px; margin-left:5px; border-radius:5px; overflow:hidden;">
+                        ${imageData ? `<img src="${imageData}" style="width:100%; height:100%; object-fit:cover;">` : ''}
+                    </div>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background:#f56565; color:white; border:none; border-radius:5px; padding:5px 10px;">✕</button>
+            `;
+            container.appendChild(div);
+        }
+        
+        function previewColorImage(input, colorId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = input.parentElement.querySelector('.color-image-preview');
+                    if (preview) {
+                        preview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function addPresetColor(colorName, hex) {
+            addColorOption(colorName, 1, 0, null);
+        }
+        
+        // ==================== РАЗМЕРЫ (при создании) ====================
+        function addSizeOption(sizeValue = '', stock = 1, extraPrice = 0) {
+            const container = document.getElementById('sizesList');
+            const div = document.createElement('div');
+            div.className = 'size-option-row';
+            div.innerHTML = `
+                <input type="text" placeholder="Размер (XS, S, M, L, XL)" value="${escapeHtml(sizeValue)}" style="width:100px;">
+                <input type="number" placeholder="Кол-во" value="${stock}" style="width:70px;" min="0">
+                <input type="number" placeholder="Доп. цена" value="${extraPrice}" style="width:80px;" min="0">
+                <button type="button" onclick="this.parentElement.remove()" style="background:#f56565; color:white; border:none; border-radius:5px; padding:5px 10px;">✕</button>
+            `;
+            container.appendChild(div);
+        }
+        
+        function addPresetSize(sizeValue) {
+            addSizeOption(sizeValue, 1, 0);
+        }
+        
+        // ==================== ТОВАРЫ ====================
+        async function loadProducts() {
+            const cat = document.getElementById('categoryFilter')?.value || 'all';
+            const search = document.getElementById('searchProduct')?.value || '';
+            try {
+                const res = await fetch(`/api/shop/admin/products?category=${cat}&search=${encodeURIComponent(search)}`);
+                const products = await res.json();
+                renderProducts(products);
+            } catch(e) {
+                console.error(e);
+                document.getElementById('productsList').innerHTML = '<div style="text-align:center;padding:40px;">Ошибка загрузки товаров</div>';
+            }
+        }
+        
+        function renderProducts(products) {
+            const container = document.getElementById('productsList');
+            if (!products.length) { container.innerHTML = '<div style="text-align:center;padding:40px;">Товары не найдены</div>'; return; }
+            container.innerHTML = '';
+            products.forEach(p => {
+                container.innerHTML += `
+                    <div class="product-card">
+                        <div class="product-info" style="flex:1;">
+                            <div class="product-title"><strong>${escapeHtml(p.name)}</strong></div>
+                            <div>💰 ${p.price} баллов | 📦 На складе: ${p.stock}</div>
+                            <div>${p.is_active ? '✅ Активен' : '❌ Неактивен'}</div>
+                            <div><small>Категория: ${escapeHtml(p.category_name) || '—'}</small></div>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-warning btn-sm" onclick="editProduct(${p.id})">✏️ Ред.</button>
+                            <button class="btn btn-danger btn-sm" onclick="toggleProductActive(${p.id}, ${p.is_active})">${p.is_active ? '🔴 Откл' : '🟢 Вкл'}</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        // ==================== РЕДАКТИРОВАНИЕ ====================
+        async function editProduct(id) {
+            currentEditProductId = id;
+            try {
+                const res = await fetch(`/api/shop/admin/products/${id}`);
+                if (!res.ok) throw new Error('Ошибка загрузки товара');
+                const p = await res.json();
+                
+                document.getElementById('editProductId').value = p.id;
+                document.getElementById('editProductName').value = p.name;
+                document.getElementById('editProductDescription').value = p.description || '';
+                document.getElementById('editProductPrice').value = p.price;
+                document.getElementById('editProductActive').value = p.is_active ? '1' : '0';
+                document.getElementById('editProductDiscount').value = p.discount || 0;
+                
+                try {
+                    const imgRes = await fetch(`/api/shop/products/${id}/images`);
+                    const images = await imgRes.json();
+                    const existingDiv = document.getElementById('existingImages');
+                    if (existingDiv) {
+                        existingDiv.innerHTML = '<strong>📸 Существующие изображения:</strong><div class="product-images" id="existingImagesList"></div>';
+                        const imagesList = document.getElementById('existingImagesList');
+                        if (imagesList && images && Array.isArray(images)) {
+                            imagesList.innerHTML = '';
+                            images.forEach(img => {
+                                imagesList.innerHTML += `
+                                    <div class="image-item">
+                                        <img src="${img.image_url}" alt="" style="width:80px; height:80px; object-fit:cover;">
+                                        <button type="button" class="remove-image" onclick="removeImage(${img.id}, ${p.id})">✕</button>
+                                    </div>
+                                `;
+                            });
+                        }
+                    }
+                } catch(e) { console.error('Ошибка загрузки изображений:', e); }
+                
+                try {
+                    const optRes = await fetch(`/api/shop/products/${id}/options`);
+                    const opts = await optRes.json();
+                    
+                    const colorsDiv = document.getElementById('editColorsList');
+                    colorsDiv.innerHTML = '';
+                    const colors = opts.filter(opt => opt.option_name === 'color');
+                    colors.forEach(opt => {
+                        addEditColorOption(opt.option_value, opt.stock, opt.extra_price, opt.id, opt.image_url);
+                    });
+                    
+                    const sizesDiv = document.getElementById('editSizesList');
+                    sizesDiv.innerHTML = '';
+                    const sizes = opts.filter(opt => opt.option_name === 'size');
+                    sizes.forEach(opt => {
+                        addEditSizeOption(opt.option_value, opt.stock, opt.extra_price, opt.id);
+                    });
+                } catch(e) { console.error('Ошибка загрузки опций:', e); }
+                
+                document.getElementById('editProductModal').style.display = 'flex';
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка загрузки товара', 'error');
+            }
+        }
+        
+        function addEditColorOption(colorName = '', stock = 1, extraPrice = 0, optId = null, imageUrl = null) {
+            const container = document.getElementById('editColorsList');
+            const div = document.createElement('div');
+            div.className = 'color-option-row';
+            const colorHex = colorHexMap[colorName] || '#CCCCCC';
+            div.innerHTML = `
+                <input type="hidden" name="color_id" value="${optId || ''}">
+                <div class="color-preview" style="background: ${colorHex}; border: ${colorHex === '#FFFFFF' ? '1px solid #ccc' : 'none'}"></div>
+                <input type="text" name="color_name" placeholder="Название цвета" value="${escapeHtml(colorName)}" style="width:100px;">
+                <input type="number" name="color_stock" placeholder="Кол-во" value="${stock}" style="width:70px;" min="0">
+                <input type="number" name="color_extra" placeholder="Доп. цена" value="${extraPrice}" style="width:80px;" min="0">
+                <div class="image-upload-for-color">
+                    <input type="file" name="color_image" accept="image/*" onchange="previewEditColorImage(this)">
+                    ${imageUrl ? `<div class="color-image-preview" style="display:inline-block; width:40px; height:40px; margin-left:5px; border-radius:5px; overflow:hidden;">
+                        <img src="${imageUrl}" style="width:100%; height:100%; object-fit:cover;">
+                    </div>` : '<div class="color-image-preview" style="display:inline-block; width:40px; height:40px; margin-left:5px;"></div>'}
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background:#f56565; color:white; border:none; border-radius:5px; padding:5px 10px;">✕</button>
+            `;
+            container.appendChild(div);
+        }
+        
+        function previewEditColorImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = input.parentElement.querySelector('.color-image-preview');
+                    if (preview) {
+                        preview.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function addEditSizeOption(sizeValue = '', stock = 1, extraPrice = 0, optId = null) {
+            const container = document.getElementById('editSizesList');
+            const div = document.createElement('div');
+            div.className = 'size-option-row';
+            div.innerHTML = `
+                <input type="hidden" name="size_id" value="${optId || ''}">
+                <input type="text" name="size_name" placeholder="Размер" value="${escapeHtml(sizeValue)}" style="width:100px;">
+                <input type="number" name="size_stock" placeholder="Кол-во" value="${stock}" style="width:70px;" min="0">
+                <input type="number" name="size_extra" placeholder="Доп. цена" value="${extraPrice}" style="width:80px;" min="0">
+                <button type="button" onclick="this.parentElement.remove()" style="background:#f56565; color:white; border:none; border-radius:5px; padding:5px 10px;">✕</button>
+            `;
+            container.appendChild(div);
+        }
+        
+        // ==================== ДОБАВЛЕНИЕ ТОВАРА ====================
+        function previewImages() {
+            const files = document.getElementById('productImages').files;
+            const preview = document.getElementById('imagePreview');
+            if (!preview) return;
+            preview.innerHTML = '';
+            for(let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML += `<div class="preview-item"><img src="${e.target.result}" style="width:80px; height:80px; object-fit:cover;"></div>`;
+                };
+                reader.readAsDataURL(files[i]);
+            }
+        }
+        
+        function previewEditImages() {
+            const files = document.getElementById('editProductImages').files;
+            const preview = document.getElementById('editImagePreview');
+            if (!preview) return;
+            preview.innerHTML = '';
+            for(let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML += `<div class="preview-item"><img src="${e.target.result}" style="width:80px; height:80px; object-fit:cover;"></div>`;
+                };
+                reader.readAsDataURL(files[i]);
+            }
+        }
+        
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('name', document.getElementById('productName').value);
+            formData.append('description', document.getElementById('productDescription').value);
+            formData.append('price', document.getElementById('productPrice').value);
+            formData.append('stock', document.getElementById('productStock').value);
+            formData.append('category_id', document.getElementById('productCategory').value);
+            formData.append('has_options', '1');
+            
+            const filesInput = document.getElementById('productImages');
+            if (filesInput && filesInput.files) {
+                for (let i = 0; i < filesInput.files.length; i++) {
+                    formData.append('images', filesInput.files[i]);
+                }
+            }
+            
+            const colors = [];
+            document.querySelectorAll('#colorsList .color-option-row').forEach(row => {
+                const name = row.querySelector('input[placeholder="Название цвета"]')?.value;
+                const stock = row.querySelector('input[placeholder="Кол-во"]')?.value;
+                const extra = row.querySelector('input[placeholder="Доп. цена"]')?.value;
+                const imageFile = row.querySelector('input[type="file"]')?.files[0];
+                
+                if (name) {
+                    colors.push({
+                        type: 'color',
+                        value: name,
+                        stock: parseInt(stock) || 0,
+                        extra_price: parseInt(extra) || 0,
+                        image: imageFile
+                    });
+                }
+            });
+            
+            const sizes = [];
+            document.querySelectorAll('#sizesList .size-option-row').forEach(row => {
+                const value = row.querySelector('input[placeholder*="Размер"]')?.value;
+                const stock = row.querySelector('input[placeholder="Кол-во"]')?.value;
+                const extra = row.querySelector('input[placeholder="Доп. цена"]')?.value;
+                
+                if (value) {
+                    sizes.push({
+                        type: 'size',
+                        value: value,
+                        stock: parseInt(stock) || 0,
+                        extra_price: parseInt(extra) || 0
+                    });
+                }
+            });
+            
+            const allOptions = [...colors, ...sizes];
+            formData.append('options', JSON.stringify(allOptions));
+            
+            for (let i = 0; i < colors.length; i++) {
+                if (colors[i].image) {
+                    formData.append(`color_image_${i}`, colors[i].image);
+                }
+            }
+            
+            try {
+                const response = await fetch('/api/shop/admin/products', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showNotification('✅ Товар успешно добавлен', 'success');
+                    document.getElementById('addProductForm').reset();
+                    document.getElementById('imagePreview').innerHTML = '';
+                    document.getElementById('colorsList').innerHTML = '';
+                    document.getElementById('sizesList').innerHTML = '';
+                    loadProducts();
+                } else {
+                    showNotification('❌ ' + (result.error || 'Ошибка при добавлении товара'), 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('❌ Ошибка соединения с сервером', 'error');
+            }
+        });
+        
+        document.getElementById('editProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            const productId = document.getElementById('editProductId').value;
+            
+            formData.append('name', document.getElementById('editProductName').value);
+            formData.append('description', document.getElementById('editProductDescription').value);
+            formData.append('price', document.getElementById('editProductPrice').value);
+            formData.append('is_active', document.getElementById('editProductActive').value);
+            formData.append('discount', document.getElementById('editProductDiscount').value);
+            
+            const files = document.getElementById('editProductImages').files;
+            for(let i = 0; i < files.length; i++) {
+                formData.append('images', files[i]);
+            }
+            
+            const colors = [];
+            document.querySelectorAll('#editColorsList .color-option-row').forEach(row => {
+                const id = row.querySelector('input[name="color_id"]')?.value;
+                const name = row.querySelector('input[name="color_name"]')?.value;
+                const stock = row.querySelector('input[name="color_stock"]')?.value;
+                const extra = row.querySelector('input[name="color_extra"]')?.value;
+                const imageFile = row.querySelector('input[name="color_image"]')?.files[0];
+                
+                if (name) {
+                    colors.push({
+                        id: id || null,
+                        type: 'color',
+                        value: name,
+                        stock: parseInt(stock) || 0,
+                        extra_price: parseInt(extra) || 0,
+                        image: imageFile || null
+                    });
+                }
+            });
+            
+            const sizes = [];
+            document.querySelectorAll('#editSizesList .size-option-row').forEach(row => {
+                const id = row.querySelector('input[name="size_id"]')?.value;
+                const value = row.querySelector('input[name="size_name"]')?.value;
+                const stock = row.querySelector('input[name="size_stock"]')?.value;
+                const extra = row.querySelector('input[name="size_extra"]')?.value;
+                
+                if (value) {
+                    sizes.push({
+                        id: id || null,
+                        type: 'size',
+                        value: value,
+                        stock: parseInt(stock) || 0,
+                        extra_price: parseInt(extra) || 0
+                    });
+                }
+            });
+            
+            const allOptions = [...colors, ...sizes];
+            formData.append('options', JSON.stringify(allOptions));
+            
+            for (let i = 0; i < colors.length; i++) {
+                if (colors[i].image && colors[i].image instanceof File) {
+                    formData.append(`color_image_${i}`, colors[i].image);
+                }
+            }
+            
+            try {
+                const res = await fetch(`/api/shop/admin/products/${productId}`, { 
+                    method: 'PUT', 
+                    body: formData 
+                });
+                if(res.ok) { 
+                    showNotification('✅ Товар обновлен', 'success');
+                    closeEditProductModal(); 
+                    loadProducts(); 
+                } else {
+                    const err = await res.json();
+                    showNotification('❌ ' + (err.error || 'Ошибка обновления'), 'error');
+                }
+            } catch(e) {
+                showNotification('❌ Ошибка', 'error');
+            }
+        });
+        
+        // ==================== УПРАВЛЕНИЕ УВЕДОМЛЕНИЯМИ (с использованием shop_settings) ====================
+
+async function loadNotificationSpecialists() {
+    try {
+        const res = await fetch('/api/shop/responsible-specialists');
+        notificationSpecialists = await res.json();
+        renderNotificationsList();
+        await loadAvailableSpecialists();
+    } catch(e) {
+        console.error('Ошибка загрузки специалистов:', e);
+    }
+}
+
+async function loadAvailableSpecialists() {
+    try {
+        const res = await fetch('/api/shop/available-specialists');
+        const specialists = await res.json();
+        const select = document.getElementById('addSpecialistSelect');
+        select.innerHTML = '<option value="">Выберите специалиста</option>';
+        
+        const existingIds = notificationSpecialists.map(s => s.responsible_user_id || s.id);
+        const available = specialists.filter(s => !existingIds.includes(s.id));
+        
+        available.forEach(spec => {
+            select.innerHTML += `<option value="${spec.id}">${escapeHtml(spec.full_name)} (${spec.vk_id ? '@' + spec.vk_id : 'нет VK'})</option>`;
+        });
+        
+        if (available.length === 0) {
+            select.innerHTML = '<option value="">Нет доступных специалистов</option>';
+            select.disabled = true;
+        } else {
+            select.disabled = false;
+        }
+    } catch(e) {
+        console.error('Ошибка загрузки доступных специалистов:', e);
+    }
+}
+
+function renderNotificationsList() {
+    const container = document.getElementById('notificationsList');
+    
+    if (!notificationSpecialists.length) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Нет настроенных специалистов для уведомлений</div>';
+        return;
+    }
+    
+    let html = `
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Имя</th>
+                    <th>VK ID</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    notificationSpecialists.forEach(spec => {
+        html += `
+            <tr>
+                <td>${escapeHtml(spec.full_name)}</td>
+                <td>${spec.vk_id ? '@' + spec.vk_id : '—'}</td>
+                <td><span class="status-badge status-active" style="background:#48bb78;">Активен</span></td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="removeNotificationSpecialist(${spec.responsible_user_id || spec.id})">Удалить</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+}
+
+async function addNotificationSpecialist() {
+    const select = document.getElementById('addSpecialistSelect');
+    const specialistId = select.value;
+    
+    if (!specialistId) {
+        showNotification('Выберите специалиста', 'error');
+        return;
+    }
+    
+    try {
+        const res = await fetch('/api/shop/responsible-specialists', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: specialistId })
+        });
+        
+        if (res.ok) {
+            showNotification('✅ Специалист добавлен в список уведомлений', 'success');
+            await loadNotificationSpecialists();
+        } else {
+            const err = await res.json();
+            showNotification(err.error || 'Ошибка', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        showNotification('Ошибка', 'error');
+    }
+}
+
+async function removeNotificationSpecialist(specialistId) {
+    if (!confirm('Удалить специалиста из списка уведомлений?')) return;
+    
+    try {
+        const res = await fetch(`/api/shop/responsible-specialists/${specialistId}`, {
+            method: 'DELETE'
+        });
+        
+        if (res.ok) {
+            showNotification('✅ Специалист удалён из списка уведомлений', 'success');
+            await loadNotificationSpecialists();
+        } else {
+            const err = await res.json();
+            showNotification(err.error || 'Ошибка', 'error');
+        }
+    } catch(e) {
+        console.error(e);
+        showNotification('Ошибка', 'error');
+    }
+}
+
+        // ==================== ЗАКАЗЫ ====================
+        async function loadOrders() {
+    const status = document.getElementById('orderStatusFilter').value;
+    try {
+        const res = await fetch(`/api/shop/admin/orders?status=${status}`);
+        const orders = await res.json();
+        const tbody = document.getElementById('ordersList');
+        if(!orders.length){ 
+            tbody.innerHTML='<tr><td colspan="7">Нет заказов</td></tr>'; 
+            return; 
+        }
+        tbody.innerHTML = '';
+        orders.forEach(o => {
+            // Отображаем VK ID если есть, иначе имя
+            const userDisplay = o.user_vk_id ? `@${o.user_vk_id}` : (o.user_name || '—');
+            tbody.innerHTML += `
+                <tr>
+                    <td>${o.order_number || o.id}</td>
+                    <td>${escapeHtml(userDisplay)}</td>
+                    <td>${escapeHtml(o.items) || '-'}</td>
+                    <td>${o.total_price} баллов</td>
+                    <td><span class="status-badge status-${o.status}">${o.status==='pending'?'Ожидает':o.status==='processing'?'В обработке':o.status==='completed'?'Выполнен':'Отменен'}</span></td>
+                    <td>${new Date(o.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <select onchange="updateOrderStatus(${o.id},this.value)" style="padding:5px;">
+                            <option value="pending" ${o.status==='pending'?'selected':''}>Ожидает</option>
+                            <option value="processing" ${o.status==='processing'?'selected':''}>В обработке</option>
+                            <option value="completed" ${o.status==='completed'?'selected':''}>Выполнен</option>
+                            <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Отменен</option>
+                        </select>
+                    </td>
+                </tr>
+            `;
+        });
+    } catch(e) { 
+        console.error(e); 
+        document.getElementById('ordersList').innerHTML = '<tr><td colspan="7">Ошибка загрузки заказов</td></tr>';
+    }
+}
+        
+        async function updateOrderStatus(id, status) {
+            try {
+                await fetch(`/api/shop/admin/orders/${id}/status`, { 
+                    method:'PUT', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({status}) 
+                });
+                showNotification('Статус заказа обновлен', 'success');
+                loadOrders();
+            } catch(e) { showNotification('Ошибка', 'error'); }
+        }
+        
+        async function toggleProductActive(id, active) {
+            try {
+                await fetch(`/api/shop/admin/products/${id}/toggle`, { 
+                    method: 'PUT', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({is_active:!active}) 
+                });
+                loadProducts();
+                showNotification('Статус товара обновлен', 'success');
+            } catch(e) { showNotification('Ошибка', 'error'); }
+        }
+        
+        async function removeImage(imgId, prodId) {
+            if (!confirm('Удалить изображение?')) return;
+            try {
+                await fetch(`/api/shop/products/image/${imgId}`, { method: 'DELETE' });
+                showNotification('Изображение удалено', 'success');
+                editProduct(prodId);
+            } catch(e) { showNotification('Ошибка удаления', 'error'); }
+        }
+        
+        async function deleteProduct() {
+            const id = document.getElementById('editProductId').value;
+            if (!confirm('Удалить товар? Это действие нельзя отменить.')) return;
+            try {
+                await fetch(`/api/shop/admin/products/${id}`, { method: 'DELETE' });
+                showNotification('Товар удален', 'success');
+                closeEditProductModal();
+                loadProducts();
+            } catch(e) { showNotification('Ошибка удаления', 'error'); }
+        }
+        
+        function closeEditProductModal() { 
+            document.getElementById('editProductModal').style.display = 'none'; 
+        }
+        
+        function showNotification(msg, type) { 
+            const existing = document.querySelector('.notification');
+            if(existing) existing.remove();
+            const notif = document.createElement('div');
+            notif.className = `notification ${type}`;
+            notif.textContent = msg;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+        
+        function escapeHtml(s) { 
+            if (!s) return '';
+            return String(s).replace(/[&<>]/g, function(m){
+                if(m==='&') return '&amp;';
+                if(m==='<') return '&lt;';
+                if(m==='>') return '&gt;';
+                return m;
+            }); 
+        }
+        
+        // Инициализация
+        loadAdminData();
+    </script>
+</body>
+</html>

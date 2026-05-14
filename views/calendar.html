@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Календарь мероприятий</title>
+    <link rel="icon" type="image/x-icon" href="/images/logo.ico">
+    <link rel="shortcut icon" href="/images/logo.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/logo-small.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/logo-small.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/logo-small.png">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/logo.css">
     <link rel="stylesheet" href="/css/sidebar.css">
@@ -16,36 +21,41 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-logo">
                 <a href="/dashboard" class="logo-container">
-                    <img src="/images/company1.png" alt="Компания 1" class="logo-image">
-                    <span class="logo-cross"></span>
-                    <img src="/images/company2.png" alt="Компания 2" class="logo-image logo-text">
+                    <img src="/images/company1w.png" alt="Компания 1" class="logo-image">
+                    <span class="logo-cross logo-cross-white"></span>
+                    <img src="/images/company2w.png" alt="Компания 2" class="logo-image logo-text">
                 </a>
             </div>
 
-            <div class="sidebar-profile" id="sidebarProfile">
-                <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
-                <div class="sidebar-profile-info">
-                    <h4 id="sidebarUserName">Загрузка...</h4>
-                    <p id="sidebarUserRole"></p>
+<a href="#" class="sidebar-profile-link" onclick="showProfile(); return false;">
+    <div class="sidebar-profile" id="sidebarProfile">
+        <div class="sidebar-profile-avatar" id="sidebarAvatar"></div>
+        <div class="sidebar-profile-info">
+            <h4 id="sidebarUserName">Загрузка...</h4>
+                        <p id="sidebarUserRole"></p>
+                    </div>
                 </div>
-            </div>
+            </a>
 
-            <ul class="sidebar-nav" id="sidebarNav">
+                        <ul class="sidebar-nav" id="sidebarNav">
                 <li class="sidebar-nav-item">
                     <a href="/dashboard" class="sidebar-nav-link">
-                        <i>🏠</i>
+                        <img src="/images/User Interface/home.svg" class="sidebar-icon">
                         <span>Главная</span>
                     </a>
                 </li>
+
+
+            <ul class="sidebar-nav" id="sidebarNav">
                 <li class="sidebar-nav-item">
                     <a href="/calendar" class="sidebar-nav-link active">
-                        <i>📅</i>
+                        <img src="/images/User Interface/calendar.svg" class="sidebar-icon">
                         <span>Календарь</span>
                     </a>
                 </li>
                 <li class="sidebar-nav-item">
                     <a href="#" class="sidebar-nav-link" onclick="logout(); return false;">
-                        <i>🚪</i>
+                        <img src="/images/User Interface/Backspace.svg" class="sidebar-icon">
                         <span>Выход</span>
                     </a>
                 </li>
@@ -57,7 +67,7 @@
             <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
             <div class="mobile-logo">
                 <img src="/images/company1.png" alt="Company 1" style="height: 30px;">
-                <span class="logo-cross" style="width: 20px; height: 20px;"></span>
+                <span class="logo-cross logo-cross-colored" style="width: 20px; height: 20px;"></span>
                 <img src="/images/company2.png" alt="Company 2" style="height: 30px;">
             </div>
             <div></div>
@@ -67,13 +77,13 @@
         <main class="main-content">
             <div class="content-wrapper" id="contentWrapper">
                 <div class="calendar-header">
-                    <h1 class="calendar-title">📅 Календарь мероприятий</h1>
+                    <h1 class="calendar-title">Календарь мероприятий</h1>
                     
                     <div class="calendar-controls">
                         <select id="teamFilter" class="filter-select" onchange="filterEvents()">
                             <option value="all">Все команды</option>
                         </select>
-                        <button class="btn" onclick="loadEvents()">🔄 Обновить</button>
+                        <button class="btn" onclick="loadEvents()"><img src="/images/User Interface/Reload.svg" class="sidebar-icon"> Обновить</button>
                     </div>
 
                     <div class="status" id="status">
@@ -149,9 +159,34 @@
         </div>
     </div>
 
+<!-- Модальное окно подтверждения выхода -->
+<div id="logoutModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <div class="modal-header">
+            <h2>Подтверждение выхода</h2>
+            <span class="close" onclick="closeLogoutModal()">&times;</span>
+        </div>
+        <div style="padding: 20px;">
+            <p style="font-size: 1.1rem; margin-bottom: 20px;">
+                Вы уверены, что хотите выйти из системы?
+            </p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn btn-secondary" onclick="closeLogoutModal()" style="padding: 10px 20px;">
+                    Отмена
+                </button>
+                <button class="btn btn-primary" onclick="confirmLogout()" style="padding: 10px 20px; background: #f56565;">
+                    Выйти
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="/js/utils.js"></script>
+    <script src="/js/modals.js"></script>
     <script src="/js/sidebar.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ru.js'></script>
-    <script src="/js/calendar.js"></script>
+    <script src="/js/calendar.js"> </script>
 </body>
 </html>

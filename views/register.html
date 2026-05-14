@@ -4,19 +4,228 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация - Рейтинг активистов</title>
+    <link rel="icon" type="image/x-icon" href="/images/logo.ico">
+    <link rel="shortcut icon" href="/images/logo.ico">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/logo.css">
+    <style>
+        /* Модальное окно */
+
+        .info-message {
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+.info-message.success {
+    color: #48bb78;
+}
+
+.info-message.error {
+    color: #f56565;
+}
+
+.info-message.loading {
+    color: #666;
+}
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            color: #333;
+            margin: 0;
+        }
+        
+        .close-modal {
+            position: absolute;
+            right: 15px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close-modal:hover {
+            color: #bf5254;
+        }
+        
+        .vk-instruction {
+            background: #f0f9ff;
+            border-left: 4px solid #bf5254;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            border-radius: 8px;
+        }
+        
+        .vk-instruction a {
+            color: #bf5254;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .vk-instruction a:hover {
+            text-decoration: underline;
+        }
+        
+        .code-input {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .code-input input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .code-input input:focus {
+            border-color: #bf5254;
+            outline: none;
+        }
+        
+        .timer {
+            text-align: center;
+            color: #666;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+        
+        .resend-btn {
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .resend-btn button {
+            background: none;
+            border: none;
+            color: #bf5254;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .resend-btn button:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .code-error {
+            color: #f56565;
+            font-size: 0.85rem;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .btn-verify {
+            width: 100%;
+            padding: 12px;
+            background: #bf5254;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .btn-verify:hover {
+            background: #a35057;
+        }
+        
+        .btn-verify:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-back-step {
+            width: 100%;
+            padding: 10px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        
+        .password-container {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .error-message {
+            color: #f56565;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .success-message {
+            color: #48bb78;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .required-field label::after {
+            content: " *";
+            color: #bf5254;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="container">
-                        <a href="/" class="logo-container">
+            <a href="/" class="logo-container">
                 <img src="/images/company1.png" alt="Компания 1" class="logo-image">
-                    <span class="logo-cross"></span>
+                    <span class="logo-cross logo-cross-black"></span>
                     <img src="/images/company2.png" alt="Компания 2" class="logo-image logo-text">
             </a>
             <div class="nav-links">
-                <a href="/">Главная</a>
+                <a href="/" > Главная</a>
                 <a href="/login">Вход</a>
                 <a href="/register" class="active">Регистрация</a>
             </div>
@@ -32,41 +241,66 @@
                 
                 <div id="alert" class="alert" style="display: none;"></div>
                 
+                <!-- Основная форма регистрации -->
                 <form id="registerForm">
-                    <div class="form-group">
-                        <label for="username">Имя пользователя</label>
-                        <input type="text" id="username" name="username" required>
+                    <div class="form-group required-field">
+                        <label for="username">Логин</label>
+                        <input type="text" id="username" name="username" required 
+                               pattern="[a-zA-Z0-9_]{3,30}"
+                               title="Только латинские буквы, цифры и _ (3-30 символов)">
+                        <small>Только латинские буквы, цифры и _ (3-30 символов)</small>
+                        <div id="username-error" class="error-message"></div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
+                    <div class="form-group required-field">
+                        <label for="vk_id">VK ID</label>
+                        <input type="text" id="vk_id" name="vk_id" required 
+                               placeholder="@user или 12345678"
+                               pattern="^(@?[a-zA-Z0-9_.]+|\d+)$"
+                               title="Введите VK ID: цифры (12345678) или короткое имя (@durov)">
+                        <small>Ваш идентификатор ВКонтакте:</small>
+                        <div id="vk_id-error" class="error-message"></div>
+    <div id="vk_id-status" class="info-message" style="font-size: 0.85rem; margin-top: 5px;"></div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="full_name">Полное имя</label>
-                        <input type="text" id="full_name" name="full_name" required>
+                    <div class="form-group required-field">
+                        <label for="full_name">ФИО (полностью)</label>
+                        <input type="text" id="full_name" name="full_name" required 
+                               placeholder="Иванов Иван Иванович"
+                               pattern="[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+"
+                               title="Введите полное ФИО: Фамилия Имя Отчество">
+                        <small>Формат: Фамилия Имя Отчество</small>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="team_id">Команда (необязательно)</label>
-                        <select id="team_id" name="team_id">
+                    <div class="form-group required-field">
+                        <label for="team_id">Команда</label>
+                        <select id="team_id" name="team_id" required>
                             <option value="">Выберите команду</option>
                         </select>
-                        <div id="teams-loading" style="color: #666; font-size: 0.9rem; margin-top: 5px;">Загрузка команд...</div>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group required-field">
                         <label for="password">Пароль</label>
-                        <input type="password" id="password" name="password" required minlength="6">
+                        <div class="password-container">
+                            <input type="password" id="password" name="password" required minlength="6"
+                                   pattern="[a-zA-Z0-9!@#$%^&*]+"
+                                   title="Только латинские буквы, цифры и спецсимволы (!@#$%^&*)">
+                            <span class="toggle-password" onclick="togglePassword('password')"><img src="/images/User Interface/eye.svg" class="sidebar-icon"></span>
+                        </div>
+                        <small>Только латинские буквы, цифры и спецсимволы (!@#$%^&*). Минимум 6 символов.</small>
+                        <div id="password-strength" class="error-message"></div>
                     </div>
                     
-                    <div class="form-group">
+                    <div class="form-group required-field">
                         <label for="confirm_password">Подтвердите пароль</label>
-                        <input type="password" id="confirm_password" name="confirm_password" required>
+                        <div class="password-container">
+                            <input type="password" id="confirm_password" name="confirm_password" required>
+                            <span class="toggle-password" onclick="togglePassword('confirm_password')"><img src="/images/User Interface/eye.svg" class="sidebar-icon"></span>
+                        </div>
+                        <div id="password-match" class="error-message"></div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Зарегистрироваться</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Продолжить</button>
                 </form>
                 
                 <p style="text-align: center; margin-top: 20px;">
@@ -76,125 +310,554 @@
         </div>
     </div>
 
-    <script>
-        // Функция для загрузки команд
-        async function loadTeams() {
-            const teamsLoading = document.getElementById('teams-loading');
-            const teamSelect = document.getElementById('team_id');
+    <!-- Модальное окно для ввода кода -->
+    <div id="codeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeCodeModal()">&times;</span>
             
-            try {
-                console.log('🔄 Загрузка списка команд...');
-                
-                // Пробуем разные возможные URL
-                let response = null;
-                let urls = [
-                    '/activist/teams',
-                    '/api/teams',
-                    '/teams'
-                ];
-                
-                for (const url of urls) {
-                    try {
-                        console.log(`Пробуем URL: ${url}`);
-                        response = await fetch(url);
-                        if (response.ok) {
-                            console.log(`✅ Успешно загружено с ${url}`);
-                            break;
-                        }
-                    } catch (e) {
-                        console.log(`❌ ${url} не работает`);
-                    }
-                }
-                
-                if (!response || !response.ok) {
-                    throw new Error('Не удалось загрузить список команд');
-                }
-                
-                const teams = await response.json();
-                console.log('✅ Загружены команды:', teams);
-                
-                // Очищаем селект
-                teamSelect.innerHTML = '<option value="">Выберите команду</option>';
-                
-                if (teams && teams.length > 0) {
-                    teams.forEach(team => {
-                        const option = document.createElement('option');
-                        option.value = team.id;
-                        option.textContent = team.name;
-                        teamSelect.appendChild(option);
+            <div class="modal-header">
+                <h3>Подтверждение регистрации</h3>
+            </div>
+            
+            <div class="vk-instruction">
+                <img src="/images/User Interface/alert_b.svg" class="sidebar-icon"> <strong>Важно!</strong> Перед получением кода необходимо:
+                <ul style="margin: 10px 0 0 20px; padding: 0;">
+                    <li>Написать любое сообщение в наше <a href="https://vk.com/infoopoovood" target="_blank">сообщество ВКонтакте</a></li>
+                    <li>После этого вернуться и запросить код</li>
+                    <li>Дождаться ответа</li>
+                </ul>
+            </div>
+            
+            <div id="codeMessage" class="info-message" style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+                Нажмите "Отправить код", чтобы получить 6-значный код в VK
+            </div>
+            
+            <div class="code-input">
+                <input type="text" maxlength="1" class="code-digit" data-index="0">
+                <input type="text" maxlength="1" class="code-digit" data-index="1">
+                <input type="text" maxlength="1" class="code-digit" data-index="2">
+                <input type="text" maxlength="1" class="code-digit" data-index="3">
+                <input type="text" maxlength="1" class="code-digit" data-index="4">
+                <input type="text" maxlength="1" class="code-digit" data-index="5">
+            </div>
+            
+            <div id="codeError" class="code-error"></div>
+            
+            <div class="timer" id="timer" style="display: none;">
+                Повторно отправить код через <span id="timerSeconds">60</span> сек
+            </div>
+            
+            <div class="resend-btn">
+                <button id="sendCodeBtn"><img src="/images/User Interface/vk.svg" class="sidebar-icon"> Отправить код</button>
+                <button id="resendCodeBtn" style="display: none;"><img src="/images/User Interface/reload.svg" class="sidebar-icon"> Отправить повторно</button>
+            </div>
+            
+            <button id="verifyCodeBtn" class="btn-verify" disabled>Подтвердить и завершить регистрацию</button>
+            <button id="backToFormBtn" class="btn-back-step">← Вернуться к заполнению</button>
+        </div>
+    </div>
+
+    <script>
+
+        let vkCheckTimeout = null;
+
+        async function checkVkId(vkId) {
+    const errorDiv = document.getElementById('vk_id-error');
+    const statusDiv = document.getElementById('vk_id-status');
+    
+    // Нормализуем VK ID (убираем @)
+    const normalizedVkId = vkId.replace('@', '');
+    
+    if (!normalizedVkId) {
+        errorDiv.textContent = '';
+        statusDiv.textContent = '';
+        return;
+    }
+    
+    // Показываем индикатор загрузки
+    
+    try {
+        const response = await fetch(`/api/check-vk/${encodeURIComponent(normalizedVkId)}`);
+        const result = await response.json();
+        
+        if (result.exists) {
+            errorDiv.textContent = '<img src="/images/User Interface/no.svg" class="sidebar-icon"> Пользователь с таким VK ID уже зарегистрирован';
+            errorDiv.style.color = '#f56565';
+            statusDiv.textContent = '';
+            return false;
+        } else {
+            errorDiv.textContent = '';
+            statusDiv.style.color = '#48bb78';
+            return true;
+        }
+    } catch (error) {
+        console.error('Ошибка проверки VK ID:', error);
+        statusDiv.textContent = '<img src="/images/User Interface/alert.svg" class="sidebar-icon"> Не удалось проверить VK ID';
+        statusDiv.style.color = '#ecc94b';
+        return true; // В случае ошибки всё равно разрешаем регистрацию
+    }
+}
+
+// Добавляем обработчик для поля VK ID
+document.getElementById('vk_id').addEventListener('input', function() {
+    const vkId = this.value;
+    
+    // Очищаем предыдущий таймаут
+    if (vkCheckTimeout) clearTimeout(vkCheckTimeout);
+    
+    // Ждем 500 мс после остановки ввода
+    vkCheckTimeout = setTimeout(() => {
+        if (vkId.length >= 3) {
+            checkVkId(vkId);
+        } else {
+            document.getElementById('vk_id-error').textContent = '';
+            document.getElementById('vk_id-status').textContent = '';
+        }
+    }, 500);
+});
+
+        // ========== ЗАПРЕТ КОПИРОВАНИЯ ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordFields = ['password', 'confirm_password'];
+            
+            passwordFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    // Запрет копирования (Ctrl+C)
+                    field.addEventListener('copy', (e) => {
+                        e.preventDefault();
+                        return false;
                     });
-                    teamsLoading.style.display = 'none';
-                } else {
-                    teamSelect.innerHTML = '<option value="">Нет доступных команд</option>';
-                    teamsLoading.textContent = 'Команды не найдены';
+                    
+                    // Запрет вырезания (Ctrl+X)
+                    field.addEventListener('cut', (e) => {
+                        e.preventDefault();
+                        return false;
+                    });
+                    
+                    // Запрет перетаскивания
+                    field.addEventListener('dragstart', (e) => {
+                        e.preventDefault();
+                        return false;
+                    });
+                    
+                    // Запрет контекстного меню (правой кнопки)
+                    field.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        return false;
+                    });
+                    
+                    // Запрет выделения через Ctrl+A
+                    field.addEventListener('keydown', (e) => {
+                        if ((e.ctrlKey && e.key === 'a') || (e.ctrlKey && e.key === 'c') || (e.ctrlKey && e.key === 'x')) {
+                            e.preventDefault();
+                            return false;
+                        }
+                    });
                 }
-                
-            } catch (error) {
-                console.error('❌ Ошибка загрузки команд:', error);
-                teamSelect.innerHTML = '<option value="">Ошибка загрузки команд</option>';
-                teamsLoading.textContent = 'Ошибка загрузки команд. Пожалуйста, обновите страницу.';
+            });
+        });
+
+        // ========== ФУНКЦИИ ВАЛИДАЦИИ ==========
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            field.type = field.type === 'password' ? 'text' : 'password';
+        }
+
+        // Проверка логина (только латиница, цифры, _)
+        function validateUsername(username) {
+            const latinRegex = /^[a-zA-Z0-9_]{3,30}$/;
+            if (!latinRegex.test(username)) {
+                return { valid: false, message: 'Логин может содержать только латинские буквы, цифры и знак подчеркивания (3-30 символов)' };
+            }
+            return { valid: true, message: '' };
+        }
+
+        // Проверка ФИО
+        function validateFullName(fullName) {
+            const parts = fullName.trim().split(/\s+/);
+            if (parts.length !== 3) {
+                return { valid: false, message: 'Введите полное ФИО: Фамилия Имя Отчество' };
+            }
+            const nameRegex = /^[А-ЯЁ][а-яё]+$/;
+            for (let part of parts) {
+                if (!nameRegex.test(part)) {
+                    return { valid: false, message: 'Каждая часть ФИО должна начинаться с заглавной буквы и содержать только русские буквы' };
+                }
+            }
+            return { valid: true, message: '' };
+        }
+
+        // Проверка VK ID
+        function validateVkId(vkId) {
+            const normalized = vkId.replace('@', '');
+            const vkRegex = /^[a-zA-Z0-9_.]+$/;
+            if (!vkRegex.test(normalized)) {
+                return { valid: false, message: 'VK ID может содержать только латинские буквы, цифры, точки и знак подчеркивания' };
+            }
+            return { valid: true, message: '' };
+        }
+
+        // Проверка пароля (только латиница, цифры, спецсимволы)
+        function validatePassword(password) {
+            const latinRegex = /^[a-zA-Z0-9!@#$%^&*]+$/;
+            if (!latinRegex.test(password)) {
+                return { valid: false, message: 'Пароль может содержать только латинские буквы, цифры и спецсимволы (!@#$%^&*)' };
+            }
+            return { valid: true, message: '' };
+        }
+
+        // Проверка сложности пароля
+        function checkPasswordStrength(password) {
+            const strengthDiv = document.getElementById('password-strength');
+            
+            const latinValidation = validatePassword(password);
+            if (!latinValidation.valid && password.length > 0) {
+                strengthDiv.className = 'error-message';
+                strengthDiv.textContent = latinValidation.message;
+                return false;
+            }
+            
+            if (password.length === 0) {
+                strengthDiv.textContent = '';
+                return false;
+            }
+            
+            let strength = 0;
+            let messages = [];
+            
+            if (password.length >= 8) {
+                strength += 25;
+            } else {
+                messages.push('минимум 8 символов');
+            }
+            
+            if (/\d/.test(password)) {
+                strength += 25;
+            } else {
+                messages.push('хотя бы одну цифру');
+            }
+            
+            if (/[A-Z]/.test(password)) {
+                strength += 25;
+            } else {
+                messages.push('хотя бы одну заглавную букву');
+            }
+            
+            if (/[!@#$%^&*]/.test(password)) {
+                strength += 25;
+            } else {
+                messages.push('хотя бы один спецсимвол (!@#$%^&*)');
+            }
+            
+            if (strength < 50) {
+                strengthDiv.className = 'error-message';
+                strengthDiv.textContent = 'Слабый пароль: ' + messages.join(', ');
+                return false;
+            } else if (strength < 75) {
+                strengthDiv.className = 'success-message';
+                strengthDiv.textContent = 'Средний пароль';
+                return true;
+            } else {
+                strengthDiv.className = 'success-message';
+                strengthDiv.textContent = 'Сильный пароль';
+                return true;
             }
         }
 
-        // Загружаем команды при загрузке страницы
-        document.addEventListener('DOMContentLoaded', loadTeams);
-
-        // Обработка отправки формы
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
+        // Проверка совпадения паролей
+        function checkPasswordMatch() {
             const password = document.getElementById('password').value;
             const confirm = document.getElementById('confirm_password').value;
+            const matchDiv = document.getElementById('password-match');
             
-            if (password !== confirm) {
-                showAlert('Пароли не совпадают', 'error');
-                return;
+            if (confirm.length === 0) {
+                matchDiv.textContent = '';
+                return false;
             }
             
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-            delete data.confirm_password;
-            
-            console.log('📝 Отправка данных регистрации:', data);
-            
-            try {
-                const response = await fetch('/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                console.log('📥 Ответ сервера:', result);
-                
-                if (response.ok) {
-                    showAlert('Регистрация успешна! Перенаправление...', 'success');
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 2000);
-                } else {
-                    showAlert(result.error || 'Ошибка при регистрации', 'error');
-                }
-                
-            } catch (error) {
-                console.error('❌ Ошибка:', error);
-                showAlert('Ошибка соединения с сервером', 'error');
+            if (password === confirm) {
+                matchDiv.className = 'success-message';
+                matchDiv.textContent = '✓ Пароли совпадают';
+                return true;
+            } else {
+                matchDiv.className = 'error-message';
+                matchDiv.textContent = '✗ Пароли не совпадают';
+                return false;
             }
-        });
-        
+        }
+
+        // ========== ФУНКЦИИ МОДАЛЬНОГО ОКНА ==========
+        let currentVkId = '';
+        let currentTempData = null;
+        let codeSent = false;
+        let timerInterval = null;
+        let timeLeft = 60;
+
         function showAlert(message, type) {
             const alert = document.getElementById('alert');
             alert.textContent = message;
             alert.className = `alert alert-${type}`;
             alert.style.display = 'block';
-            
-            // Автоматически скрываем через 5 секунд
-            setTimeout(() => {
-                alert.style.display = 'none';
-            }, 5000);
+            setTimeout(() => alert.style.display = 'none', 5000);
         }
+
+        function showModalMessage(message, isError = false) {
+            const msgDiv = document.getElementById('codeMessage');
+            msgDiv.textContent = message;
+            msgDiv.style.background = isError ? '#ffebee' : '#e3f2fd';
+            msgDiv.style.color = isError ? '#c62828' : '#0c5460';
+        }
+
+        function startTimer() {
+            timeLeft = 60;
+            const timerSpan = document.getElementById('timerSeconds');
+            const timerDiv = document.getElementById('timer');
+            const sendBtn = document.getElementById('sendCodeBtn');
+            const resendBtn = document.getElementById('resendCodeBtn');
+            
+            timerDiv.style.display = 'block';
+            sendBtn.style.display = 'none';
+            resendBtn.style.display = 'inline-block';
+            resendBtn.disabled = true;
+            
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerSpan.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerDiv.style.display = 'none';
+                    sendBtn.style.display = 'inline-block';
+                    resendBtn.style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        async function sendVerificationCode() {
+            showModalMessage('⏳ Отправка кода...');
+            
+            try {
+                const response = await fetch('/auth/send-verification-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vk_id: currentVkId })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    codeSent = true;
+                    showModalMessage('<img src="/images/User Interface/yes.svg" class="sidebar-icon"> Код отправлен в VK! Введите его ниже.');
+                    document.getElementById('verifyCodeBtn').disabled = false;
+                    startTimer();
+                } else {
+                    showModalMessage('<img src="/images/User Interface/no.svg" class="sidebar-icon"> Не удалось отправить код. Проверьте VK ID и напишите сообщение в группу.', true);
+                }
+            } catch (error) {
+                showModalMessage('<img src="/images/User Interface/no.svg" class="sidebar-icon"> Ошибка соединения с сервером', true);
+            }
+        }
+
+        function closeCodeModal() {
+            document.getElementById('codeModal').style.display = 'none';
+            if (timerInterval) clearInterval(timerInterval);
+        }
+
+        function openCodeModal() {
+            document.getElementById('codeModal').style.display = 'flex';
+            document.getElementById('codeError').textContent = '';
+            document.querySelectorAll('.code-digit').forEach(input => input.value = '');
+            document.querySelector('.code-digit[data-index="0"]').focus();
+            document.getElementById('verifyCodeBtn').disabled = true;
+            codeSent = false;
+        }
+
+        // Автопереход между полями кода
+        document.querySelectorAll('.code-digit').forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < 5) {
+                    document.querySelector(`.code-digit[data-index="${index + 1}"]`).focus();
+                }
+            });
+            
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    document.querySelector(`.code-digit[data-index="${index - 1}"]`).focus();
+                }
+            });
+        });
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        // Загрузка команд
+        async function loadTeams() {
+            const response = await fetch('/api/teams');
+            const teams = await response.json();
+            const select = document.getElementById('team_id');
+            select.innerHTML = '<option value="">Выберите команду</option>';
+            teams.forEach(team => {
+                const option = document.createElement('option');
+                option.value = team.id;
+                option.textContent = team.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Обработчики валидации в реальном времени
+        document.getElementById('username').addEventListener('input', function() {
+            const result = validateUsername(this.value);
+            const errorDiv = document.getElementById('username-error');
+            if (!result.valid && this.value) {
+                errorDiv.textContent = result.message;
+            } else {
+                errorDiv.textContent = '';
+            }
+        });
+
+        document.getElementById('password').addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+            checkPasswordMatch();
+        });
+
+        document.getElementById('confirm_password').addEventListener('input', checkPasswordMatch);
+
+        // Отправка формы регистрации
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const vkId = document.getElementById('vk_id').value.trim();
+            const fullName = document.getElementById('full_name').value.trim();
+            const teamId = document.getElementById('team_id').value;
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            
+            // Проверка выбора команды
+            if (!teamId) {
+                showAlert('Выберите команду', 'error');
+                return;
+            }
+            
+            // Проверка логина
+            const usernameValidation = validateUsername(username);
+            if (!usernameValidation.valid) {
+                showAlert(usernameValidation.message, 'error');
+                return;
+            }
+            
+            // Проверка VK ID
+            const vkValidation = validateVkId(vkId);
+            if (!vkValidation.valid) {
+                showAlert(vkValidation.message, 'error');
+                return;
+            }
+            
+            // Проверка совпадения паролей
+            if (password !== confirm) {
+                showAlert('Пароли не совпадают', 'error');
+                return;
+            }
+            
+            // Проверка пароля на латинские символы
+            const passwordValidation = validatePassword(password);
+            if (!passwordValidation.valid) {
+                showAlert(passwordValidation.message, 'error');
+                return;
+            }
+            
+            // Проверка длины пароля
+            if (password.length < 6) {
+                showAlert('Пароль должен содержать минимум 6 символов', 'error');
+                return;
+            }
+            
+            // Проверка ФИО
+            const nameValidation = validateFullName(fullName);
+            if (!nameValidation.valid) {
+                showAlert(nameValidation.message, 'error');
+                return;
+            }
+            
+            const vkIdCheck = await checkVkId(vkId);
+if (!vkIdCheck) {
+    showAlert('Этот VK ID уже зарегистрирован в системе', 'error');
+    return;
+}
+
+            // Сохраняем данные
+            currentTempData = {
+                username,
+                vk_id: vkId.replace('@', ''),
+                full_name: fullName,
+                team_id: teamId,
+                password
+            };
+            currentVkId = vkId.replace('@', '');
+            
+            // Открываем модальное окно для ввода кода
+            openCodeModal();
+
+
+
+        });
+        
+        // Отправка кода
+        document.getElementById('sendCodeBtn').addEventListener('click', sendVerificationCode);
+        document.getElementById('resendCodeBtn').addEventListener('click', sendVerificationCode);
+        
+        // Подтверждение кода и регистрация
+        document.getElementById('verifyCodeBtn').addEventListener('click', async () => {
+            const codeDigits = document.querySelectorAll('.code-digit');
+            const code = Array.from(codeDigits).map(input => input.value).join('');
+            
+            if (code.length !== 6) {
+                document.getElementById('codeError').textContent = 'Введите полный 6-значный код';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/auth/verify-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        vk_id: currentVkId,
+                        code: code,
+                        user_data: currentTempData
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Регистрация успешна! Перенаправление...', 'success');
+                    closeCodeModal();
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    document.getElementById('codeError').textContent = result.error || 'Неверный код';
+                }
+            } catch (error) {
+                document.getElementById('codeError').textContent = 'Ошибка соединения с сервером';
+            }
+        });
+        
+        // Назад к форме
+        document.getElementById('backToFormBtn').addEventListener('click', () => {
+            closeCodeModal();
+        });
+        
+        // Закрытие по клику вне окна
+        window.onclick = function(event) {
+            const modal = document.getElementById('codeModal');
+            if (event.target === modal) {
+                closeCodeModal();
+            }
+        };
+        
+        loadTeams();
     </script>
 </body>
 </html>

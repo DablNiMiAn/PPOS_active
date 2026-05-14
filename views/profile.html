@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль пользователя</title>
+    <link rel="icon" type="image/x-icon" href="/images/logo.ico">
+    <link rel="shortcut icon" href="/images/logo.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/logo-small.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/logo-small.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/logo-small.png">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/logo.css">
     <style>
@@ -257,14 +262,13 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
+        <nav class="navbar">
         <div class="container">
-             <div class="container">
-        <a href="/dashboard" class="logo-container pulse-on-load">
-            <img src="/images/company1.png" alt="Компания 1" class="logo-image">
-            <span class="logo-cross"></span>
-            <img src="/images/company2.png" alt="Компания 2" class="logo-image">
-        </a>
+            <a href="/dashboard" class="logo-container">
+                <img src="/images/company1.png" alt="Компания 1" class="logo-image">
+                    <span class="logo-cross logo-cross-black"></span>
+                    <img src="/images/company2.png" alt="Компания 2" class="logo-image logo-text">
+            </a>
         <div class="nav-links">
             <div class="nav-links">
                 <a href="/dashboard">Главная</a>
@@ -274,9 +278,6 @@
     </nav>
 
     <div class="profile-container">
-        <div class="back-button">
-            <a href="javascript:history.back()">← Вернуться</a>
-        </div>
 
         <div id="loading" class="loading">Загрузка профиля...</div>
         
@@ -368,7 +369,11 @@
                 </table>
             </div>
         </div>
+                <div class="back-button">
+            <a href="javascript:history.back()">← Вернуться</a>
+        </div>
     </div>
+
 
     <script>
     // Получаем ID пользователя из URL
@@ -479,7 +484,6 @@
         // Отображаем контактную информацию если есть права
         if (canSeeContactInfo) {
             document.getElementById('contactInfo').style.display = 'block';
-            document.getElementById('contactEmail').innerHTML = `<strong>Email:</strong> ${userData.email || 'Не указан'}`;
             document.getElementById('contactUsername').innerHTML = `<strong>Username:</strong> @${userData.username || 'Не указан'}`;
         }
 

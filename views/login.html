@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход - Рейтинг активистов</title>
+    <link rel="icon" type="image/x-icon" href="/images/logo.ico">
+    <link rel="shortcut icon" href="/images/logo.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/logo-small.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/logo-small.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/logo-small.png">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/logo.css">
 </head>
@@ -12,7 +17,7 @@
         <div class="container">
             <a href="/" class="logo-container">
                 <img src="/images/company1.png" alt="Компания 1" class="logo-image">
-                    <span class="logo-cross"></span>
+                    <span class="logo-cross logo-cross-black"></span>
                     <img src="/images/company2.png" alt="Компания 2" class="logo-image logo-text">
             </a>
             <div class="nav-links">
@@ -46,6 +51,10 @@
                     <button type="submit" class="btn btn-primary" style="width: 100%;">Войти</button>
                 </form>
                 
+                <p style="text-align: center; margin-top: 10px;">
+    <a href="/forgot-password.html">Забыли пароль?</a>
+</p>
+
                 <p style="text-align: center; margin-top: 20px;">
                     Нет аккаунта? <a href="/register">Зарегистрируйтесь</a>
                 </p>
@@ -55,31 +64,34 @@
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
-            
-            try {
-                const response = await fetch('/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    window.location.href = result.redirect;
-                } else {
-                    showAlert(result.error, 'error');
-                }
-            } catch (error) {
-                showAlert('Ошибка соединения с сервером', 'error');
-            }
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+    
+    console.log('📤 Отправка данных:', { login: data.login, password: '***' });
+    
+    try {
+        const response = await fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            window.location.href = result.redirect;
+        } else {
+            alert(result.error || 'Ошибка при входе');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка:', error);
+        alert('Ошибка соединения с сервером');
+    }
+});
         
         function showAlert(message, type) {
             const alert = document.getElementById('alert');

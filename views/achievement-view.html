@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Детали достижения</title>
+    <title>Просмотр достижения</title>
     <link rel="icon" type="image/x-icon" href="/images/logo.ico">
     <link rel="shortcut icon" href="/images/logo.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/logo-small.png">
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/logo.css">
     <style>
-        .detail-container {
+        .view-container {
             max-width: 800px;
             margin: 20px auto;
         }
@@ -111,40 +111,21 @@
             color: white;
         }
         
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
+        .rejection-info {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
         
-        .btn-approve {
-            background: #48bb78;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .btn-approve:hover {
-            background: #38a169;
-        }
-        
-        .btn-reject {
-            background: #f56565;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .btn-reject:hover {
-            background: #e53e3e;
+        .rejection-reason {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f56565;
+            margin: 15px 0;
+            white-space: pre-wrap;
         }
         
         .btn-back {
@@ -158,33 +139,35 @@
             transition: background 0.3s;
             text-decoration: none;
             display: inline-block;
+            margin-bottom: 20px;
         }
         
         .btn-back:hover {
             background: #4a5568;
         }
         
-        .rejection-form {
-            background: #fff5f5;
-            border: 2px solid #fc8181;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .rejection-form textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
+        .btn-edit {
+            background: #bf5254;
+            color: white;
+            padding: 12px 30px;
+            border: none;
             border-radius: 5px;
-            font-size: 1rem;
-            margin-bottom: 15px;
-            resize: vertical;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 15px;
         }
         
-        .rejection-form textarea:focus {
-            outline: none;
-            border-color: #f56565;
+        .btn-edit:hover {
+            background: #a35057;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
         }
         
         .loading {
@@ -230,7 +213,10 @@
         </div>
     </nav>
 
-    <div class="detail-container">
+    <div class="view-container">
+        <div style="margin-bottom: 20px;">
+            <button onclick="goBack()" class="btn-back">← Вернуться</button>
+        </div>
 
         <div id="loading" class="loading">Загрузка данных достижения...</div>
         
@@ -243,6 +229,14 @@
                     <span class="achievement-meta-item" id="achievementPoints"></span>
                     <span class="achievement-meta-item" id="achievementDate"></span>
                 </div>
+            </div>
+
+            <!-- Информация об отклонении (если есть) -->
+            <div id="rejectionInfo" class="rejection-info" style="display: none;">
+                <h3 style="color: #c53030; margin-top: 0;">⚠️ Достижение отклонено</h3>
+                <div id="rejectionReason" class="rejection-reason"></div>
+                <p><strong>Модератор:</strong> <span id="rejectionModerator"></span></p>
+                <p><strong>Дата:</strong> <span id="rejectionDate"></span></p>
             </div>
 
             <!-- Основная информация -->
@@ -283,41 +277,9 @@
                 </div>
             </div>
 
-            <!-- Информация о модерации (для отклоненных) -->
-            <div id="moderationInfo" class="info-section" style="display: none;">
-                <h2>Информация о модерации</h2>
-                
-                <div class="info-row">
-                    <span class="info-label">Модератор:</span>
-                    <span class="info-value" id="moderatorName"></span>
-                </div>
-                
-                <div class="info-row">
-                    <span class="info-label">Дата модерации:</span>
-                    <span class="info-value" id="moderationDate"></span>
-                </div>
-                
-                <div class="info-row">
-                    <span class="info-label">Причина отказа:</span>
-                    <span class="info-value" id="rejectionReason"></span>
-                </div>
-            </div>
-
-            <!-- Кнопки действий (только для специалиста и только для pending) -->
-            <div id="actionButtons" class="action-buttons">
-                <button class="btn-approve" onclick="approveAchievement()">✓ Принять достижение</button>
-                <button class="btn-reject" onclick="showRejectionForm()">✗ Отклонить</button>
-                <a href="/dashboard" class="btn-back">← Назад к модерации</a>
-            </div>
-
-            <!-- Форма отказа (изначально скрыта) -->
-            <div id="rejectionForm" class="rejection-form" style="display: none;">
-                <h3 style="margin-top: 0; color: #c53030;">Укажите причину отказа</h3>
-                <textarea id="rejectionReasonInput" rows="4" placeholder="Опишите, почему достижение отклоняется..."></textarea>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-reject" onclick="submitRejection()">Отправить причину отказа</button>
-                    <button class="btn-back" onclick="hideRejectionForm()">Отмена</button>
-                </div>
+            <!-- Кнопка редактирования (для председателя, если достижение отклонено и он создатель) -->
+            <div id="editButtonContainer" style="display: none;">
+                <a href="#" id="editAchievementLink" class="btn-edit">✏️ Редактировать достижение</a>
             </div>
         </div>
     </div>
@@ -332,7 +294,7 @@
         let currentUser = null;
 
         // Загрузка данных достижения
-        async function loadAchievementDetails() {
+        async function loadAchievementView() {
             try {
                 // Загружаем информацию о текущем пользователе
                 const userResponse = await fetch('/api/user');
@@ -346,16 +308,16 @@
                 
                 achievementData = await response.json();
                 
-                displayAchievementDetails();
+                displayAchievementView();
                 
             } catch (error) {
                 console.error('Ошибка:', error);
-                showNotification('Ошибка при загрузке данных', 'error');
+                document.getElementById('loading').innerHTML = '❌ Ошибка при загрузке данных';
             }
         }
 
         // Отображение данных достижения
-        function displayAchievementDetails() {
+        function displayAchievementView() {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('achievementContent').style.display = 'block';
 
@@ -385,156 +347,24 @@
             document.getElementById('creatorLink').href = `/profile.html?id=${achievementData.created_by}&role=${userRole}`;
             document.getElementById('creatorRole').textContent = achievementData.creator_role || 'Неизвестно';
 
-            // Информация о модерации
-            if (achievementData.status !== 'pending') {
-                document.getElementById('moderationInfo').style.display = 'block';
-                document.getElementById('moderatorName').innerHTML = achievementData.moderator_name ? 
+            // Информация об отклонении
+            if (achievementData.status === 'rejected' && achievementData.rejection_reason) {
+                document.getElementById('rejectionInfo').style.display = 'block';
+                document.getElementById('rejectionReason').innerHTML = `<strong>Причина:</strong> ${achievementData.rejection_reason}`;
+                document.getElementById('rejectionModerator').innerHTML = achievementData.moderator_name ? 
                     `<a href="/profile.html?id=${achievementData.moderated_by}&role=${userRole}" class="user-link">${achievementData.moderator_name}</a>` : 
                     'Неизвестно';
-                document.getElementById('moderationDate').textContent = achievementData.moderated_at ? 
+                document.getElementById('rejectionDate').textContent = achievementData.moderated_at ? 
                     new Date(achievementData.moderated_at).toLocaleString() : 'Неизвестно';
-                
-                if (achievementData.rejection_reason) {
-                    document.getElementById('rejectionReason').innerHTML = `
-                        <div style="background: #fff0f0; padding: 10px; border-radius: 5px;">
-                            ${achievementData.rejection_reason}
-                        </div>
-                    `;
-                } else {
-                    document.getElementById('rejectionReason').textContent = 'Не указана';
-                }
             }
 
-            // Показываем кнопки только для специалиста и только для pending достижений
-            if (userRole === 'specialist' && achievementData.status === 'pending') {
-                document.getElementById('actionButtons').style.display = 'flex';
-            } else {
-                document.getElementById('actionButtons').style.display = 'none';
+            // Кнопка редактирования для председателя (если он создатель и достижение отклонено)
+            if (userRole === 'chairman' && 
+                achievementData.created_by === currentUser.id && 
+                achievementData.status === 'rejected') {
+                document.getElementById('editButtonContainer').style.display = 'block';
+                document.getElementById('editAchievementLink').href = `/chairman-achievement-edit.html?id=${achievementId}`;
             }
-        }
-
-        // Принять достижение
-        async function approveAchievement() {
-    if (!confirm('Вы уверены, что хотите принять это достижение?')) return;
-    
-    try {
-        const response = await fetch(`/specialist/moderate-achievement/${achievementId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                status: 'approved',
-                reason: '' 
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            showNotification('Достижение принято! Баллы начислены активисту.', 'success');
-            
-            // Отправляем уведомления
-            await sendNotifications('approved', '');
-            
-            setTimeout(() => {
-                window.location.href = '/dashboard';  // ИСПРАВЛЕНО: было /specialist
-            }, 2000);
-        } else {
-            showNotification(result.error || 'Ошибка при модерации', 'error');
-        }
-        
-    } catch (error) {
-        console.error('Ошибка:', error);
-        showNotification('Ошибка соединения с сервером', 'error');
-    }
-}
-
-        // Показать форму отказа
-        function showRejectionForm() {
-            document.getElementById('rejectionForm').style.display = 'block';
-            document.getElementById('actionButtons').style.display = 'none';
-        }
-
-        // Скрыть форму отказа
-        function hideRejectionForm() {
-            document.getElementById('rejectionForm').style.display = 'none';
-            document.getElementById('actionButtons').style.display = 'flex';
-        }
-
-        // Отклонить достижение с причиной
-        async function submitRejection() {
-            const reason = document.getElementById('rejectionReasonInput').value.trim();
-            
-            if (!reason) {
-                alert('Укажите причину отказа');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/specialist/moderate-achievement/${achievementId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        status: 'rejected',
-                        reason: reason 
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    showNotification('Достижение отклонено. Уведомления отправлены.', 'success');
-                    
-                    // Отправляем уведомления
-                    await sendNotifications('rejected', reason);
-                    
-                    setTimeout(() => {
-                        window.location.href = '/dashboard';
-                    }, 2000);
-                } else {
-                    showNotification(result.error || 'Ошибка при модерации', 'error');
-                }
-                
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showNotification('Ошибка соединения с сервером', 'error');
-            }
-        }
-
-        // Отправка уведомлений
-        async function sendNotifications(status, reason) {
-            try {
-                await fetch('/api/send-achievement-notifications', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        achievementId: achievementId,
-                        status: status,
-                        reason: reason,
-                        userId: achievementData.user_id,
-                        creatorId: achievementData.created_by
-                    })
-                });
-            } catch (error) {
-                console.error('Ошибка при отправке уведомлений:', error);
-            }
-        }
-
-        // Показать уведомление
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
         }
 
         // Вспомогательные функции
@@ -560,7 +390,7 @@
 
         // Загрузка данных при старте
         if (achievementId) {
-            loadAchievementDetails();
+            loadAchievementView();
         } else {
             window.location.href = '/dashboard';
         }
